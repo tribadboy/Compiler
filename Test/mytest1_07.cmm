@@ -1,0 +1,4 @@
+int main()
+{
+	float i = .105e2.a3;
+}
