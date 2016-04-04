@@ -67,6 +67,11 @@ ExtDef:		Specifier ExtDecList SEMI { $$ = setCSNode(MyEXTDEF,@$.first_line);
   |	Specifier FunDec CompSt	{ $$ = setCSNode(MyEXTDEF,@$.first_line);
   				  add3Childs($$,$1,$2,$3);
 				}
+  |	Specifier FunDec error SEMI {
+  				  $$ = setCSNode(MyEXTDEF,@$.first_line);
+				  printf("Error type B at Line %d: Incomplete definition of function, missing \"{\".\n", @3.first_line);
+				  add3Childs($$,$1,$2,$4);
+				}
   ;
 ExtDecList:	VarDec		{ $$ = setCSNode(MyEXTDECLIST,@$.first_line);
 				  addChild($$,$1);
