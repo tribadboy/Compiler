@@ -1,14 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdio.h>
 #include "type.h"
 
 #define P_STACK_SIZE  80
 #define MAX_CHARS_IN_ID 36
 
-static StackNode pstack[P_STACK_SIZE];
-static int p_top = -1;
+StackNode pstack[P_STACK_SIZE];
+int p_top = -1;
 int printTreeFlag = 1;
 
 void push(CSNode *p, int h) {

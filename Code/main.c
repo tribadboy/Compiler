@@ -22,9 +22,11 @@ int main(int argc, char** argv) {
 		MY_LEXER_PRINT_FLAG = 1		print every tokens
 	*/
 //	yydebug = 1;
-	MY_LEXER_PRINT_FLAG = 1;
+//	MY_LEXER_PRINT_FLAG = 1;
 	yyparse();
 	if(MY_LEXER_PRINT_FLAG == 1)	printf("******** show the tree *********\n");
 	if(printTreeFlag == 1)			preOrderPrint(treeRoot);
+	preOrder(treeRoot);
+	testSymbol();
 	return 0;
 }

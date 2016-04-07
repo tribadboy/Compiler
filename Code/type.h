@@ -16,6 +16,10 @@ typedef enum TokenType {
 	MyDEC	     = 47,	MyARGS	= 48
 } TokenType;
  
+typedef enum SymbolType {
+	MyINTVAR = 1,	MyFLOATVAR = 2,		MyARRAYVAR = 3,
+	MySTRUCTNAME = 4,	MySTRUCTVAR = 5,	MyFUNCNAME = 6
+} SymbolType;
 
 /* each TokenType */
 typedef struct TYPE_INT          { int value; 	  } TYPE_INT;
@@ -91,17 +95,23 @@ typedef union TYPE_UNION {
 	TYPE_ARGS type_args;
 } TYPE_UNION;
 
+//symbol type
+//typedef struct SYMBOL_INT { int value; };
+//typedef struct SYMBOL_FLOAT { float vlaue; };
+//typedef struct SYMBOL_ARRAY { /* need to add sth */ };
+//typedef struct SYMBOL_STRUCTNAME { /* sth */	};
+//typedef struct SYMBOL_STRUCTVAR { /* sth */	};
+//typedef struct SYMBOL_FUNC { /* sth */		};
+
 typedef struct CSNode {
 	enum TokenType type;
 	int lineNo;
-//	char str[30];
-//	double value;
 	struct CSNode	*firstChild;
 	struct CSNode	*nextSibling;
 	union TYPE_UNION type_union;
 } CSNode;
 
-CSNode *treeRoot;
+CSNode *treeRoot;		// the root of the syntax tree
 
 int printTreeFlag;
 
@@ -115,7 +125,28 @@ typedef struct PoolNode {
 	struct PoolNode *next;
 } PoolNode;
 
+typedef struct SYNode {
+	enum SymbolType type;
+	char *name;
+	int lineno;
+	void *content;		// point to the symbol type struct content
+	struct SYNode *nextHash;
+} SYNode;
+
+typedef struct SymbolNode {
+	struct SYNode s_node;
+	struct SymbolNode *next;
+} SymbolNode;
+
+
+
+
+
+/* --------------------------- func --------------------------------*/
+
 /* func in tree.c  */
+void push(CSNode *p, int h);
+int pop(CSNode **P, int *h);
 CSNode *setCSNode(TokenType t, int no);
 CSNode *setCSNode_int(TokenType t, int no, int v);
 CSNode *setCSNode_float(TokenType t, int no, float v);
@@ -134,9 +165,18 @@ void preOrderPrint(CSNode *root);
 /* func  in pool.c */
 PoolNode *getNode();
 void deleteNode(PoolNode *p);
+SymbolNode *getSymbolNode();
+void deleteSymbolNode(SymbolNode *p);
 
 /* func in print.c  */
 char *getTypeName(TokenType type);
 void printTypeExp(CSNode *pnode);
 
+/* func in symbol.c */
+void initSymbolTable();
+void addSymbol(SymbolType t, char *name, int no);
+void testSymbol();
 
+
+/* func in semantic.c */
+void preOrder(CSNode *root);
