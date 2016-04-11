@@ -95,13 +95,30 @@ typedef union TYPE_UNION {
 	TYPE_ARGS type_args;
 } TYPE_UNION;
 
+struct SpecialType;
+typedef struct FieldList {
+	char *name;
+	struct SpecialType *type;
+	struct FieldList *tail;
+} FieldList;
+
+typedef struct SpecialType {
+	enum { BASIC, ARRAY, STRUCTURE } kind;
+	union {
+		int basic;	// 0 means int , 1 means float
+		struct { struct SpecialType *elem; int size; } array;
+		FieldList *structure;
+	} u;
+} SpecialType;
+
 //symbol type
-//typedef struct SYMBOL_INT { int value; };
-//typedef struct SYMBOL_FLOAT { float vlaue; };
-//typedef struct SYMBOL_ARRAY { /* need to add sth */ };
-//typedef struct SYMBOL_STRUCTNAME { /* sth */	};
-//typedef struct SYMBOL_STRUCTVAR { /* sth */	};
-//typedef struct SYMBOL_FUNC { /* sth */		};
+struct SYNode;
+typedef struct SYMBOL_INT { int value; } SYMBOL_INT;
+typedef struct SYMBOL_FLOAT { float vlaue; } SYMBOL_FLOAT;
+typedef struct SYMBOL_ARRAY { SpecialType *elem; int size; } SYMBOL_ARRAY;
+typedef struct SYMBOL_STRUCTNAME { FieldList *structure; } SYMBOL_STRUCTNAME;
+typedef struct SYMBOL_STRUCTVAR { struct SYNode *structname;} SYMBOL_STRUCTVAR;
+typedef struct SYMBOL_FUNC { SpecialType *rel; FieldList *param; } SYMBOL_FUNC;
 
 typedef struct CSNode {
 	enum TokenType type;
@@ -127,6 +144,7 @@ typedef struct PoolNode {
 
 typedef struct SYNode {
 	enum SymbolType type;
+	int isEmpty;
 	char *name;
 	int lineno;
 	void *content;		// point to the symbol type struct content
@@ -174,9 +192,19 @@ void printTypeExp(CSNode *pnode);
 
 /* func in symbol.c */
 void initSymbolTable();
-void addSymbol(SymbolType t, char *name, int no);
+SYNode *checkSymbol(int emptyFlag, char *name);
+void addSymbol(SymbolType t, int emptyFlag, char *name, int no, void *pos);
 void testSymbol();
 
 
 /* func in semantic.c */
 void preOrder(CSNode *root);
+void postOrder(CSNode *root);
+void handleSpecifier(CSNode *tmp, SpecialType *pos);
+int isProduction_0(CSNode *f,TokenType t);
+int isProduction_1(CSNode *f,TokenType t,TokenType c1);
+int isProduction_2(CSNode *f,TokenType t,TokenType c1,TokenType c2);
+int isProduction_3(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3);
+int isProduction_4(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4);
+int isProduction_5(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5);
+int isProduction_6(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5,TokenType c6);

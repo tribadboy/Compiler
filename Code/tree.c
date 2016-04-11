@@ -42,6 +42,9 @@ void preOrderPrint(CSNode *root) {
 }
 */
 void preOrderPrint(CSNode *root) {
+	if(root == NULL) {
+		return;
+	}
 	int high = 0;
 	push(root,high);
 	CSNode *temp;

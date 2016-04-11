@@ -16,31 +16,55 @@ void initSymbolTable() {
 }
 
 static unsigned int hash_djb(char *name) {
+	if(name == NULL) {		//location is hashtable[0]
+		return 0;
+	}
 	unsigned int val = 5381;
 	for(; *name; ++name) {
 		val = (val << 5) + val +  *name;
 	}
-	return val % TABLE_SIZE;
+	return val % (TABLE_SIZE - 1) + 1;  //location is hashtable[1]-hashtable[TABLE_SIZE-1]
 }
 
 // a test func, ignore the type content, just consider the name
 // find and add a SYNode
 
-void addSymbol(SymbolType t, char* name, int no) {
+// check whether the symbol name is same ,if same return pos,or return NULL
+SYNode *checkSymbol(int emptyFlag, char* name) {
+	unsigned int index = hash_djb(name);
+	SYNode *temp;
+	if(hashtable[index] != NULL) {
+		temp = hashtable[index];
+		if(temp->isEmpty == 0 && emptyFlag == 0 && strcmp(temp->name,name) == 0) {
+			return temp;
+		}
+		while(temp->nextHash != NULL) {
+			temp = temp->nextHash;
+			if(temp->isEmpty == 0 && emptyFlag == 0 && strcmp(temp->name,name) == 0) {
+				return temp;
+			}
+		}
+	}
+	return NULL;
+}
+
+void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *pos) {
 	
 	unsigned int index = hash_djb(name);
 	SYNode *temp;
 	if(hashtable[index] != NULL) {
 		temp = hashtable[index];
 		//check same
-		if(temp->type == t && strcmp(temp->name,name) == 0) {
-			printf("###find a same name %s in the same type at line %d\n",name,no);
+		if(temp->isEmpty == 0 && emptyFlag == 0 && strcmp(temp->name,name) == 0) {
+			// should modify and split to serveral types error later
+			printf("###find a same name %s at line %d\n",name,no);
 			return;
 		}
 		while(temp->nextHash != NULL) {
 			temp = temp->nextHash;
-			if(temp->type == t && strcmp(temp->name,name) == 0){
-				printf("###find a same name %s in the same type at line %d\n",name,no);
+			if(temp->isEmpty == 0 && emptyFlag == 0 && strcmp(temp->name,name) == 0){
+				// should modify ......
+				printf("###find a same name %s at line %d\n",name,no);
 				return;
 			}
 			
@@ -50,9 +74,10 @@ void addSymbol(SymbolType t, char* name, int no) {
 	SymbolNode *p = getSymbolNode();
 	SYNode *pnode = &(p->s_node);
 	pnode->type = t;
+	pnode->isEmpty = emptyFlag;
 	pnode->lineno = no;
-	//cannot find a same name error in the same row
 	pnode->name = name;
+	pnode->content = pos;
 	pnode->nextHash = NULL;
 	//should modify sth here
 	pnode->content = NULL;
@@ -72,7 +97,11 @@ void testSymbol() {
 			SYNode *temp = hashtable[i];
 			printf("index: %d\n", i);
 			while(temp != NULL) {
-				printf("type: %d\t name: %s\t line: %d\n",(int)temp->type, temp->name, temp->lineno);
+				if(i == 0) {
+					printf("type: %d\t name: empty\t line: %d\n",(int)temp->type,temp->lineno);
+				} else {
+					printf("type: %d\t name: %s\t line: %d\n",(int)temp->type, temp->name, temp->lineno);
+				}
 				temp = temp->nextHash;
 			}
 			printf("\n");
