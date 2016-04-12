@@ -5,14 +5,16 @@
 
 #define TABLE_SIZE 200
 
-//static int initFlag = 0;
+static int initFlag = 0;
 static SYNode *hashtable[TABLE_SIZE];
+//static SYNode *repeatlist = NULL;	// maybe some name is repeat, but cannot ignore them directly, example MySTRUCTNAME and MyFUNC, maybe there is sth should use later in the STRUCT or FUNC
 
-void initSymbolTable() {
+static void initSymbolTable() {
 	int i;
 	for(i = 0; i < TABLE_SIZE; i++) {
 		hashtable[i] = NULL;
 	}
+	initFlag = 1;
 }
 
 static unsigned int hash_djb(char *name) {
@@ -26,32 +28,45 @@ static unsigned int hash_djb(char *name) {
 	return val % (TABLE_SIZE - 1) + 1;  //location is hashtable[1]-hashtable[TABLE_SIZE-1]
 }
 
-// a test func, ignore the type content, just consider the name
-// find and add a SYNode
-
 // check whether the symbol name is same ,if same return pos,or return NULL
-SYNode *checkSymbol(int emptyFlag, char* name) {
-	unsigned int index = hash_djb(name);
-	SYNode *temp;
-	if(hashtable[index] != NULL) {
-		temp = hashtable[index];
-		if(temp->isEmpty == 0 && emptyFlag == 0 && strcmp(temp->name,name) == 0) {
-			return temp;
-		}
-		while(temp->nextHash != NULL) {
-			temp = temp->nextHash;
-			if(temp->isEmpty == 0 && emptyFlag == 0 && strcmp(temp->name,name) == 0) {
+// if name is NULL(emptyFlag == 1),  think is no same
+SYNode *checkSymbolName(int emptyFlag, char* name) {
+	if(initFlag == 0) {
+		initSymbolTable();
+	}
+
+	if(emptyFlag == 1 && name == NULL) {
+		return NULL;
+	} else if(emptyFlag == 0 && name != NULL) {	//name is not NULL, and index unit should has no symbol that name is also NULL
+		unsigned int index = hash_djb(name);
+		SYNode *temp;
+		if(hashtable[index] != NULL) {
+			temp = hashtable[index];
+			if(strcmp(temp->name,name) == 0) {
 				return temp;
 			}
+			while(temp->nextHash != NULL) {
+				temp = temp->nextHash;
+				if(strcmp(temp->name,name) == 0) {
+					return temp;
+				}
+			}
 		}
+		return NULL;
+	} else {
+		printf("error, emptyFlag and name is not match\n");
+		return NULL;
 	}
-	return NULL;
 }
 
-void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *pos) {
+//only add a symbol in the hashtable, not check whether same
+void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *con) {
+	if(initFlag == 0) {
+		initSymbolTable();
+	}
 	
 	unsigned int index = hash_djb(name);
-	SYNode *temp;
+/*	SYNode *temp;
 	if(hashtable[index] != NULL) {
 		temp = hashtable[index];
 		//check same
@@ -70,22 +85,18 @@ void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *pos) {
 			
 		}
 	}
-	//confirm no same, get and build a SYNode
+*/
+	//not check whether same, get and build a SYNode
 	SymbolNode *p = getSymbolNode();
 	SYNode *pnode = &(p->s_node);
 	pnode->type = t;
 	pnode->isEmpty = emptyFlag;
 	pnode->lineno = no;
 	pnode->name = name;
-	pnode->content = pos;
-	pnode->nextHash = NULL;
-	//should modify sth here
-	pnode->content = NULL;
-	if(hashtable[index] == NULL) {
-		hashtable[index] = pnode;
-	} else {
-		temp->nextHash = pnode;
-	}
+	pnode->content = con;
+	//insert at the head of every unit in the hashtable
+	pnode->nextHash = hashtable[index];
+	hashtable[index] = pnode;
 }
 
 //look the contents in the hashtable for checking

@@ -4,6 +4,7 @@
 
 #define p_NUM 30
 #define s_NUM 50
+#define t_NUM 20
 // PoolNode is a node representing the syntax unit
 // SymbolNode is a node representing the symbol in the symbol table
 

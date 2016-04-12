@@ -114,10 +114,10 @@ typedef struct SpecialType {
 //symbol type
 struct SYNode;
 typedef struct SYMBOL_INT { int value; } SYMBOL_INT;
-typedef struct SYMBOL_FLOAT { float vlaue; } SYMBOL_FLOAT;
-typedef struct SYMBOL_ARRAY { SpecialType *elem; int size; } SYMBOL_ARRAY;
-typedef struct SYMBOL_STRUCTNAME { FieldList *structure; } SYMBOL_STRUCTNAME;
-typedef struct SYMBOL_STRUCTVAR { struct SYNode *structname;} SYMBOL_STRUCTVAR;
+typedef struct SYMBOL_FLOAT { float value; } SYMBOL_FLOAT;
+typedef struct SYMBOL_ARRAY { SpecialType *type; void *value; } SYMBOL_ARRAY;
+typedef struct SYMBOL_STRUCTNAME { SpecialType *type;} SYMBOL_STRUCTNAME;
+typedef struct SYMBOL_STRUCTVAR { struct SYNode *structnamenode; void *value; } SYMBOL_STRUCTVAR;
 typedef struct SYMBOL_FUNC { SpecialType *rel; FieldList *param; } SYMBOL_FUNC;
 
 typedef struct CSNode {
@@ -145,7 +145,7 @@ typedef struct PoolNode {
 typedef struct SYNode {
 	enum SymbolType type;
 	int isEmpty;
-	char *name;
+	char *name;		// not apply a new area, use CSNode area
 	int lineno;
 	void *content;		// point to the symbol type struct content
 	struct SYNode *nextHash;
@@ -191,16 +191,14 @@ char *getTypeName(TokenType type);
 void printTypeExp(CSNode *pnode);
 
 /* func in symbol.c */
-void initSymbolTable();
-SYNode *checkSymbol(int emptyFlag, char *name);
-void addSymbol(SymbolType t, int emptyFlag, char *name, int no, void *pos);
+SYNode *checkSymbolName(int emptyFlag, char *name);
+void addSymbol(SymbolType t, int emptyFlag, char *name, int no, void *con);
 void testSymbol();
 
 
 /* func in semantic.c */
 void preOrder(CSNode *root);
 void postOrder(CSNode *root);
-void handleSpecifier(CSNode *tmp, SpecialType *pos);
 int isProduction_0(CSNode *f,TokenType t);
 int isProduction_1(CSNode *f,TokenType t,TokenType c1);
 int isProduction_2(CSNode *f,TokenType t,TokenType c1,TokenType c2);

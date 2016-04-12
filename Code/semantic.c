@@ -3,6 +3,11 @@
 #include <string.h>
 #include "type.h"
 
+static void handleExtDef_1(CSNode *root);
+static void handleExtDef_2(CSNode *root);
+static void handleExtDef_3(CSNode *root);
+static SpecialType *handleSpecifier(CSNode *root);
+static FieldList *handleDefList(CSNode *root);
 
 void preOrder(CSNode *root) {
 	if(root == NULL) {
@@ -23,21 +28,14 @@ void preOrder(CSNode *root) {
 		*/
 		//check some productions
 		if(isProduction_3(tmp,MyEXTDEF,MySPECIFIER,MyEXTDECLIST,MySEMI) == 1) {
-			SpecialType tmp_type;
-			handleSpecifier(tmp->firstChild,&tmp_type);
-			printf("kind: %d\n",(int)(tmp_type.kind));
-			//do sth
+			handleExtDef_1(tmp);
 
 		} else if(isProduction_2(tmp,MyEXTDEF,MySPECIFIER,MySEMI) == 1) {
-			SpecialType tmp_type;
-			handleSpecifier(tmp->firstChild,&tmp_type);
-			printf("kind: %d\n",(int)(tmp_type.kind));
-			// do sth
+			handleExtDef_2(tmp);
+
 		} else if(isProduction_3(tmp,MyEXTDEF,MySPECIFIER,MyFUNDEC,MyCOMPST) == 1) {
-			SpecialType tmp_type;
-			handleSpecifier(tmp->firstChild,&tmp_type);
-			printf("kind: %d\n",(int)(tmp_type.kind));
-			// do sth
+			handleExtDef_3(tmp);
+
 		}
 		if(tmp->nextSibling != NULL) {
 			push(tmp->nextSibling,high);
@@ -48,63 +46,123 @@ void preOrder(CSNode *root) {
 	}
 }
 	
-void handleSpecifier(CSNode *tmp, SpecialType *pos) {
-	if(isProduction_1(tmp,MySPECIFIER,MyTYPE) == 1) {
-		pos->kind = BASIC;
-		CSNode *sptmp = tmp->firstChild;
-		char * tmp = (sptmp->type_union).type_type.token;
-		if(strcmp(tmp,"int") == 0) {
-			pos->u.basic = 0;
-		} else if(strcmp(tmp,"float") == 0) {
-			pos->u.basic = 1;
+//handle production "ExtDef -> Specifier ExtDecList SEMI"
+static void handleExtDef_1(CSNode *root) {
+	SpecialType *basicType;
+	basicType = handleSpecifier(root->firstChild);
+
+	//do sth
+	printf("kind: %d\n",(int)(basicType->kind));
+}
+
+//handle production "ExtDef -> Specifier SEMI"
+static void handleExtDef_2(CSNode *root) {
+	SpecialType *basicType;
+	basicType = handleSpecifier(root->firstChild);
+
+	//do sth
+	printf("kind: %d\n",(int)(basicType->kind));
+}
+
+//handle production "ExtDef -> Specifier FunDec CompSt"
+static void handleExtDef_3(CSNode *root) {
+	SpecialType *basicType;
+	basicType = handleSpecifier(root->firstChild);
+
+	//do stf
+	printf("kind: %d\n",(int)(basicType->kind));
+}
+
+static FieldList *handleDefList(CSNode *root){
+	//do sth
+	return NULL;
+}
+
+//handle production "Specifier -> ...|... "
+//apply a area if it is successful, but not give back
+static SpecialType *handleSpecifier(CSNode *root) {
+	SpecialType *pos;
+	if(isProduction_1(root,MySPECIFIER,MyTYPE) == 1) {
+		CSNode *sptmp = root->firstChild;
+		char * token_tmp = (sptmp->type_union).type_type.token;
+		if(strcmp(token_tmp,"int") == 0) {
+			pos = (SpecialType *)malloc(sizeof(SpecialType));
+			pos->kind = BASIC;
+			(pos->u).basic = 0;
+			return pos;
+		} else if(strcmp(token_tmp,"float") == 0) {
+			pos = (SpecialType *)malloc(sizeof(SpecialType));
+			pos->kind = BASIC;
+			(pos->u).basic = 1;
+			return pos;
 		} else {
-			pos->u.basic = 2;	//error
 			printf("error basic ,neither int or float\n");
+			return NULL;
 		}
-	} else if(isProduction_1(tmp,MySPECIFIER,MySTRUCTSPECIFIER) == 1) {
-		pos->kind = STRUCTURE;
-		if(isProduction_5(tmp->firstChild,MySTRUCTSPECIFIER,MySTRUCT,MyOPTTAG,MyLC,MyDEFLIST,MyRC) == 1) {
-			CSNode *opttag = tmp->firstChild->firstChild->nextSibling;
-			int emptyFlag = 0;
-			char *name = NULL;
-			if(opttag->firstChild == NULL) {
+	} else if(isProduction_1(root,MySPECIFIER,MySTRUCTSPECIFIER) == 1) {
+
+		if(isProduction_5(root->firstChild,MySTRUCTSPECIFIER,MySTRUCT,MyOPTTAG,MyLC,MyDEFLIST,MyRC) == 1) {
+			CSNode *deflist_tmp = root->firstChild->firstChild->nextSibling->nextSibling->nextSibling;
+			FieldList *fd_tmp = handleDefList(deflist_tmp);
+			
+
+			CSNode *opttag_tmp = root->firstChild->firstChild->nextSibling;
+			int emptyFlag;
+			char *name;
+			int addSymbolFlag = 0;
+			if(opttag_tmp->firstChild == NULL) {	//build a noname struct
 				emptyFlag = 1;
-				name = NULL;
+				name = NULL;		//should add a symbol no name
+				addSymbolFlag = 1;
 			} else {
 				emptyFlag = 0;
-				name = (opttag->firstChild->type_union).type_id.p_str;
+				name = (opttag_tmp->firstChild->type_union).type_id.p_str;
+				SYNode *checkFlag = checkSymbolName(emptyFlag,name);
+				if(checkFlag != NULL) {
+					//print error, no add symbol, but still return
+					printf("error,build a struct which its name is be used early\n");
+					addSymbolFlag = 0;
+				} else {
+					addSymbolFlag = 1;
+				}
 			}
-			//should modify later
-			FieldList *structtmp;
-			structtmp = NULL; // error
-			SYMBOL_STRUCTNAME *newNode = (SYMBOL_STRUCTNAME *)malloc(sizeof(SYMBOL_STRUCTNAME));
-			newNode->structure = structtmp;
-			int no = tmp->firstChild->firstChild->lineNo;
-			addSymbol(MySTRUCTNAME, emptyFlag, name, no, newNode);
-			(pos->u).structure = structtmp;
+			pos = (SpecialType *)malloc(sizeof(SpecialType));
+			pos->kind = STRUCTURE;
+			(pos->u).structure = fd_tmp;
+			if(addSymbolFlag == 1) {
+				SYMBOL_STRUCTNAME *newContent = (SYMBOL_STRUCTNAME *)malloc(sizeof(SYMBOL_STRUCTNAME));
+				// add a structname symbol, its type is the type(pos) that build soon
+				newContent->type = pos;
+				int no_tmp = opttag_tmp->lineNo;
+				addSymbol(MySTRUCTNAME, emptyFlag, name, no_tmp, newContent);
+			}
+			return pos;
 
-		} else if(isProduction_2(tmp->firstChild,MySTRUCTSPECIFIER,MySTRUCT,MyTAG) == 1) {
-			char *id = (((tmp->firstChild)->firstChild)->nextSibling->firstChild->type_union).type_id.p_str;
-			SYNode *tmp = checkSymbol(0,id);
-			if(tmp == NULL) {	//not find id in symbol table
+		} else if(isProduction_2(root->firstChild,MySTRUCTSPECIFIER,MySTRUCT,MyTAG) == 1) {
+			char *id = (((root->firstChild)->firstChild)->nextSibling->firstChild->type_union).type_id.p_str;
+			SYNode *checkFlag = checkSymbolName(0,id);
+			if(checkFlag == NULL) {	//not find id in symbol table
 				printf("error ,use structure not defined\n");
-				return;
+				return NULL;
 			} else {
-				if(tmp->type == MySTRUCTNAME) {
-					(pos->u).structure = ((SYMBOL_STRUCTNAME *)(tmp->content))->structure;
+				if(checkFlag->type == MySTRUCTNAME) {
+					return ((SYMBOL_STRUCTNAME *)(checkFlag->content))->type;
 				} else {
 					printf("error id is same,but not same type\n");
-					return;
+					return NULL;
 				}
 			}
 		} else {
 			printf("error StructSpecifier production\n");
+			return NULL;
 		}
 	} else {
 		printf("error Specifier production\n");
-		return;
+		return NULL;
 	}
+	return NULL;
 }
+
 	
 //post order and compute syn attribute
 void postOrder(CSNode *root) {
