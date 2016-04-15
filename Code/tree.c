@@ -124,6 +124,14 @@ CSNode *setCSNode_type(TokenType t, int no, char *s) {
 	return pnode;
 }
 
+void addEmptyChild(CSNode *root) {
+	if(root == NULL) {
+		printf("stop 2-1\n");
+		return;
+	}
+	root->firstChild = NULL;
+}
+
 void addChild(CSNode *parrent, CSNode *child) {
 	if(parrent == NULL) {
 		printf("stop 2\n");

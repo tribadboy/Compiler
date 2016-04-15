@@ -15,7 +15,9 @@ int yylex(void);
 //	double type_double;
 	CSNode *type_pnode;
 }
+
 /* declared tokens */
+/* lexer token */
 %token <type_pnode> INT 
 %token <type_pnode> FLOAT
 %token <type_pnode> ID
@@ -26,11 +28,13 @@ int yylex(void);
 %token <type_pnode> LP RP LB RB LC RC
 %token <type_pnode> STRUCT RETURN IF ELSE WHILE
 
+/* syntax token */
 %type <type_pnode> Program ExtDefList ExtDef ExtDecList Specifier 
 %type <type_pnode> StructSpecifier OptTag Tag VarDec FunDec
 %type <type_pnode> VarList ParamDec CompSt StmtList Stmt
 %type <type_pnode> DefList Def DecList Dec Exp Args
 
+/* precedence and associativity */
 %right ASSIGNOP
 %left OR
 %left AND
@@ -52,14 +56,23 @@ ExtDefList:	ExtDef ExtDefList { $$ = setCSNode(MyEXTDEFLIST,@$.first_line);
 				    add2Childs($$,$1,$2);
 				  }
   |	/* empty */		  { $$ = NULL; }
+  |	ExtDef error		  { $$ = setCSNode(MyEXTDEFLIST,@$.first_line);
+  				    printf("Error type B at Line %d: Syntax error.\n",@2.first_line);
+				    addChild($$,$1);
+				  }
   ;
 ExtDef:		Specifier ExtDecList SEMI { $$ = setCSNode(MyEXTDEF,@$.first_line);
 					    add3Childs($$,$1,$2,$3);
 					  }
-  |	 error SEMI  		{
+  |	 Specifier error SEMI  	{
   				  $$ = setCSNode(MyEXTDEF,@$.first_line);
-				  printf("Error type B at Line %d: Missing specifier.\n",@1.first_line);
-				  addChild($$,$2);
+				  printf("Error type B at Line %d: Syntax error.\n",@2.first_line);
+				  add2Childs($$,$1,$3);
+				}
+  |	error OptTag LC DefList RC SEMI {
+  				  $$ = setCSNode(MyEXTDEF,@$.first_line);
+				  printf("Error type B at Line %d: Missing \"struct\".\n",@1.first_line);
+				  add5Childs($$,$2,$3,$4,$5,$6);
 				}
   |	Specifier SEMI		{ $$ = setCSNode(MyEXTDEF,@$.first_line);
   				  add2Childs($$,$1,$2);
@@ -67,10 +80,15 @@ ExtDef:		Specifier ExtDecList SEMI { $$ = setCSNode(MyEXTDEF,@$.first_line);
   |	Specifier FunDec CompSt	{ $$ = setCSNode(MyEXTDEF,@$.first_line);
   				  add3Childs($$,$1,$2,$3);
 				}
-  |	Specifier FunDec error SEMI {
+  |	Specifier FunDec SEMI 	{ $$ = setCSNode(MyEXTDEF,@$.first_line);
+				  printf("Error type B at Line %d: Incomplete definition of function.\n",@3.first_line);
+				  yyerror(NULL);
+				  add3Childs($$,$1,$2,$3);
+				}
+  |	Specifier ID error RP CompSt {
   				  $$ = setCSNode(MyEXTDEF,@$.first_line);
-				  printf("Error type B at Line %d: Incomplete definition of function, missing \"{\".\n", @3.first_line);
-				  add3Childs($$,$1,$2,$4);
+				  printf("Error type B at Line %d: Missing \"(\" before \")\".\n",@3.first_line);
+				  add4Childs($$,$1,$2,$4,$5);
 				}
   ;
 ExtDecList:	VarDec		{ $$ = setCSNode(MyEXTDECLIST,@$.first_line);
@@ -115,6 +133,10 @@ VarDec:		ID		{ $$ = setCSNode(MyVARDEC,@$.first_line);
   |	VarDec LB INT RB	{ $$ = setCSNode(MyVARDEC,@$.first_line);
   				  add4Childs($$,$1,$2,$3,$4);
 				}
+  |	VarDec LB error RB	{ $$ = setCSNode(MyVARDEC,@$.first_line);
+  				  printf("Error type B at Line %d: Missing interger number.\n",@3.first_line);
+				  add3Childs($$,$1,$2,$4);
+				}
   |	VarDec LB INT error RB  { $$ = setCSNode(MyVARDEC,@$.first_line);
   				  printf("Error type B at Line %d: Missing \"]\".\n",@4.first_line);
 				  add4Childs($$,$1,$2,$3,$5);
@@ -143,7 +165,7 @@ FunDec:		ID LP VarList RP { $$ = setCSNode(MyFUNDEC,@$.first_line);
 				  add3Childs($$,$1,$2,$4);
 				}
   |	error RP		{ $$ = setCSNode(MyFUNDEC,@$.first_line);
-  				  printf("Error type B at Line %d: Missing id.",@1.first_line);
+  				  printf("Error type B at Line %d: Missing id.\n",@1.first_line);
 				  addChild($$,$2);
 				}
   ;
@@ -164,9 +186,10 @@ CompSt:		LC DefList StmtList RC	{
 				  $$ = setCSNode(MyCOMPST,@$.first_line);
 				  add4Childs($$,$1,$2,$3,$4);
 				}
-  |	error RC		{ $$ = setCSNode(MyCOMPST,@$.first_line);
+  |	error LC DefList StmtList  RC	{
+  				  $$ = setCSNode(MyCOMPST,@$.first_line);
   				  printf("Error type B at Line %d: Missing \"{\".\n",@1.first_line);
-				  addChild($$,$2);
+				  add4Childs($$,$2,$3,$4,$5);
 				}
   ;
 StmtList:	Stmt StmtList	{ $$ = setCSNode(MySTMTLIST,@$.first_line);
@@ -182,6 +205,10 @@ Stmt:		Exp SEMI	{ $$ = setCSNode(MySTMT,@$.first_line);
 				}
   |	RETURN Exp SEMI		{ $$ = setCSNode(MySTMT,@$.first_line);
   				  add3Childs($$,$1,$2,$3);
+				}
+  |	RETURN error SEMI	{ $$ = setCSNode(MySTMT,@$.first_line);
+  				  printf("Error type B at Line %d: Syntax error.\n",@2.first_line);
+				  add2Childs($$,$1,$3);
 				}
   |	IF LP Exp RP Stmt	%prec LOWER_THAN_ELSE {
   				  $$ = setCSNode(MySTMT,@$.first_line);
@@ -209,6 +236,11 @@ Stmt:		Exp SEMI	{ $$ = setCSNode(MySTMT,@$.first_line);
   |	WHILE LP Exp RP Stmt	{ $$ = setCSNode(MySTMT,@$.first_line);
   				  add5Childs($$,$1,$2,$3,$4,$5);
 				}
+  |	error WHILE LP Exp RP Stmt {
+  				  $$ = setCSNode(MySTMT,@$.first_line);
+				  printf("Error type B at Line %d: Syntax error.\n",@1.first_line);
+				  add5Childs($$,$2,$3,$4,$5,$6);
+				}
   |	error SEMI		{ $$ = setCSNode(MySTMT,@$.first_line);
   				  printf("Error type B at Line %d: Syntax error\n",@1.first_line);
   				  addChild($$,$2);
@@ -223,10 +255,10 @@ Def:		Specifier DecList SEMI	{
 				  $$ = setCSNode(MyDEF,@$.first_line);
 				  add3Childs($$,$1,$2,$3);
 				}
-  |	Specifier DecList error SEMI	{
+  |	Specifier  error SEMI	{
   				  $$ = setCSNode(MyDEF,@$.first_line);
-				  printf("Error type B at Line %d: Missing \";\".\n",@3.first_line);
-				  add3Childs($$,$1,$2,$4);
+				  printf("Error type B at Line %d: Syntax error.\n",@2.first_line);
+				  add2Childs($$,$1,$3);
 				}
   ;
 DecList:	Dec		{ $$ = setCSNode(MyDECLIST,@$.first_line);
@@ -284,6 +316,10 @@ Exp:		Exp ASSIGNOP Exp	{
   |	ID LP Args RP		{ $$ = setCSNode(MyEXP,@$.first_line);
   				  add4Childs($$,$1,$2,$3,$4);
 				}
+  |	ID LP Args error RP	{ $$ = setCSNode(MyEXP,@$.first_line);
+  				  printf("Error type B at Line %d: Syntax error.\n",@4.first_line);
+				  add4Childs($$,$1,$2,$3,$5);
+				}
   |	ID LP RP		{ $$ = setCSNode(MyEXP,@$.first_line);
   				  add3Childs($$,$1,$2,$3);
 				}
@@ -302,9 +338,13 @@ Exp:		Exp ASSIGNOP Exp	{
   |	FLOAT			{ $$ = setCSNode(MyEXP,@$.first_line);
   				  addChild($$,$1);
 				}
-  |	error RP		{ $$ = setCSNode(MyEXP,@$.first_line);
-  				  printf("Error type B at Line %d: Missing \"(\" or id.\n",@1.first_line);
-  				  addChild($$,$2);
+  |	LP error RP		{ $$ = setCSNode(MyEXP,@$.first_line);
+  				  printf("Error type B at Line %d: Syntax error.\n",@2.first_line);
+  				  add2Childs($$,$1,$3);
+				}
+  |	ID LP error RP		{ $$ = setCSNode(MyEXP,@$.first_line);
+  				  printf("Error type B at Line %d: Syntax error.\n",@3.first_line);
+				  add3Childs($$,$1,$2,$4);
 				}
   |	Exp LB Exp error RB	{ $$ = setCSNode(MyEXP,@$.first_line);
   				  printf("Error type B at Line %d: Missing \"]\".\n",@4.first_line);
@@ -317,16 +357,11 @@ Args:	Exp COMMA Args		{ $$ = setCSNode(MyARGS,@$.first_line);
   |	Exp			{ $$ = setCSNode(MyARGS,@$.first_line);
   				  addChild($$,$1);
 				}
-  |	Exp error COMMA Args    { $$ = setCSNode(MyARGS,@$.first_line);
-  				  printf("Error type B at Line %d: Missing \",\".\n",@2.first_line);
-				  add3Childs($$,$1,$3,$4);
-				}
   ;
 %%
 #include "lex.yy.c"
 int yyerror(char* msg) {
-//	fprintf(stderr, "error: %s at line %d  %s\n", yytext, yylineno,  msg);
-	// when find an error ,do not print the tree
+	// not print error info, just modify the flag and not print the tree
 	printTreeFlag = 0;
 	return 0;
 }

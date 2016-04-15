@@ -43,6 +43,9 @@ ws		{delim}+
 		}
 {ill_num8}	{ printf("Error type A at Line %d: Illegal octal number \"%s\".\n",yylineno,yytext); 
 		  printTreeFlag = 0;
+		  if(MY_LEXER_PRINT_FLAG == 1)	printf("0(error)\t");
+		  yylval.type_pnode = setCSNode_int(MyINT,yylineno,0);
+		  return INT;
 		}
 {intnum16}	{ myIntTemp = (int)strtol(yytext,NULL,16);
 		  if(MY_LEXER_PRINT_FLAG == 1)	printf("%d(0x--)\t",myIntTemp);
@@ -51,6 +54,9 @@ ws		{delim}+
 		}
 {ill_num16}	{ printf("Error type A at Line %d: Illegal hexadecimal number \"%s\".\n",yylineno,yytext);
 		  printTreeFlag = 0;
+		  if(MY_LEXER_PRINT_FLAG == 1)	printf("0(error)\t");
+		  yylval.type_pnode = setCSNode_int(MyINT,yylineno,0);
+		  return INT;
 		}
 {floatnum}	{ myFloatTemp = atof(yytext);
 		  if(MY_LEXER_PRINT_FLAG == 1)	printf("%f(-.--)\t",myFloatTemp);
@@ -59,6 +65,9 @@ ws		{delim}+
 		}
 {ill_floatnum}	{ printf("Error type A at Line %d: Illegal floating point number \"%s\".\n",yylineno,yytext);
 		  printTreeFlag = 0;
+		  if(MY_LEXER_PRINT_FLAG == 1)	printf("0(error)\t");
+		  yylval.type_pnode = setCSNode_float(MyFLOAT,yylineno,0);
+		  return FLOAT;
 		}
 {floatnumE}	{ myFloatTemp = atof(yytext);
 		  if(MY_LEXER_PRINT_FLAG == 1)	printf("%f(-E--)\t",myFloatTemp);
@@ -67,6 +76,9 @@ ws		{delim}+
 		}
 {ill_floatnumE}	{ printf("Error type A at Line %d: Illegal floating point number \"%s\".\n",yylineno,yytext);
 		  printTreeFlag = 0;
+		  if(MY_LEXER_PRINT_FLAG == 1)	printf("0(error)\t");
+		  yylval.type_pnode = setCSNode_float(MyFLOAT,yylineno,0);
+		  return FLOAT;
 		}
 ";"		{ if(MY_LEXER_PRINT_FLAG == 1)	printf(";\t");
 		  yylval.type_pnode = setCSNode(MySEMI,yylineno);
@@ -181,10 +193,22 @@ ws		{delim}+
 		}
 "/*"		{ if(MY_LEXER_PRINT_FLAG == 1)	printf("/*\t");
 		  char c = input();
+		  if(c == EOF) {
+		  	printf("Error type A at Line %d: Comments met EOF.\n",yylineno);
+			exit(0);
+		  }
 		  char d = input();
+		  if(d == EOF) {
+		  	printf("Error type A at Line %d: Comments met EOF.\n",yylineno);
+			exit(0);
+		  }
 		  while (c != '*' || d != '/') {
 		  	c = d;
 			d = input();
+			if(d == EOF) {
+				printf("Error type A at Line %d: Comments met EOF.\n",yylineno);
+				exit(0);
+			}
 		  }
 		  if(MY_LEXER_PRINT_FLAG == 1)	printf("*/\t");
 		}

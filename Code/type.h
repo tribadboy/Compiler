@@ -13,7 +13,7 @@ typedef enum TokenType {
 	MyDEFLIST    = 38,	MyTAG	= 39,	MyVARLIST	= 40,
 	MyPARAMDEC   = 41,	MySTMTLIST	= 42,	MySTMT	= 43,
 	MyEXP	     = 44,	MyDEF	= 45,	MyDECLIST	= 46,
-	MyDEC	     = 47,	MyARGS	= 48
+	MyDEC	     = 47,	MyARGS	= 48,	MyEOF = 49
 } TokenType;
  
 typedef enum SymbolType {
@@ -171,6 +171,7 @@ CSNode *setCSNode_float(TokenType t, int no, float v);
 CSNode *setCSNode_id(TokenType t, int no, char *s);
 CSNode *setCSNode_relop(TokenType t, int no, char *s);
 CSNode *setCSNode_type(TokenType t, int no, char *s);
+void addEmptyChild(CSNode *root);
 void addChild(CSNode *parrent, CSNode *child);
 void add2Childs(CSNode *p,CSNode *c1,CSNode *c2);
 void add3Childs(CSNode *p,CSNode *c1,CSNode *c2,CSNode *c3);
