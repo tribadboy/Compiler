@@ -3,11 +3,13 @@
 #include <string.h>
 #include "type.h"
 
-static void handleExtDef_1(CSNode *root);
-static void handleExtDef_2(CSNode *root);
-static void handleExtDef_3(CSNode *root);
+static void handleExtDef(CSNode *root);
 static SpecialType *handleSpecifier(CSNode *root);
 static FieldList *handleDefList(CSNode *root);
+static FieldList *handleDef(CSNode *root);
+static FieldList *handleDecList(CSNode *root, SpecialType *basicType);
+static FieldList *handleDec(CSNode *root, SpecialType *basicType);
+static FieldList *handleVarDec(CSNode *root, SpecialType *basicType);
 
 void preOrder(CSNode *root) {
 	if(root == NULL) {
@@ -17,26 +19,14 @@ void preOrder(CSNode *root) {
 	push(root,high);
 	CSNode *tmp;
 	while(pop(&tmp,&high)) {
-		/*
-		if(tmp->type == MyID) {
-			addSymbol(MyINTVAR,tmp->type_union.type_id.p_str,tmp->lineNo);
-		}
-		for(int i = 0;i < high; i++) {
-			printf("  ");
-		}
-		printTypeExp(tmp);
-		*/
-		//check some productions
-		if(isProduction_3(tmp,MyEXTDEF,MySPECIFIER,MyEXTDECLIST,MySEMI) == 1) {
-			handleExtDef_1(tmp);
+		//check some type and productions
 
-		} else if(isProduction_2(tmp,MyEXTDEF,MySPECIFIER,MySEMI) == 1) {
-			handleExtDef_2(tmp);
-
-		} else if(isProduction_3(tmp,MyEXTDEF,MySPECIFIER,MyFUNDEC,MyCOMPST) == 1) {
-			handleExtDef_3(tmp);
-
+		// ExtDef -> ... | ...
+		if(tmp->type == MyEXTDEF) {
+			handleExtDef(tmp);
 		}
+
+
 		if(tmp->nextSibling != NULL) {
 			push(tmp->nextSibling,high);
 		}
@@ -46,36 +36,171 @@ void preOrder(CSNode *root) {
 	}
 }
 	
-//handle production "ExtDef -> Specifier ExtDecList SEMI"
-static void handleExtDef_1(CSNode *root) {
-	SpecialType *basicType;
-	basicType = handleSpecifier(root->firstChild);
+//handle production "ExtDef -> ... | ..."
+static void handleExtDef(CSNode *root) {
+	SpecialType *basicType = NULL;
 
-	//do sth
-	printf("kind: %d\n",(int)(basicType->kind));
+	if(isProduction_3(root,MyEXTDEF,MySPECIFIER,MyEXTDECLIST,MySEMI) == 1) {
+		basicType = handleSpecifier(root->firstChild);
+
+		//do sth
+		printf("kind: %d\n",(int)(basicType->kind));
+	}
+	else if(isProduction_2(root,MyEXTDEF,MySPECIFIER,MySEMI) == 1) {
+		basicType = handleSpecifier(root->firstChild);
+
+		//just define struct, ??? shengming
+		printf("kind: %d\n",(int)(basicType->kind));
+	}
+	else if(isProduction_3(root,MyEXTDEF,MySPECIFIER,MyFUNDEC,MyCOMPST) == 1) {
+		basicType = handleSpecifier(root->firstChild);
+
+		//do sth
+		printf("kind: %d\n",(int)(basicType->kind));
+	}
+	else {
+		printf("error ExtDef produciton\n");
+	}
 }
 
-//handle production "ExtDef -> Specifier SEMI"
-static void handleExtDef_2(CSNode *root) {
-	SpecialType *basicType;
-	basicType = handleSpecifier(root->firstChild);
-
-	//do sth
-	printf("kind: %d\n",(int)(basicType->kind));
-}
-
-//handle production "ExtDef -> Specifier FunDec CompSt"
-static void handleExtDef_3(CSNode *root) {
-	SpecialType *basicType;
-	basicType = handleSpecifier(root->firstChild);
-
-	//do stf
-	printf("kind: %d\n",(int)(basicType->kind));
-}
-
+//handle production "DefList -> Def DefList | empty"
 static FieldList *handleDefList(CSNode *root){
-	//do sth
+	if(isProduction_2(root,MyDEFLIST,MyDEF,MyDEFLIST) == 1) {
+		FieldList *pos1, *pos2;
+		pos1 = handleDef(root->firstChild);
+		pos2 = handleDefList(root->firstChild->nextSibling);
+		if(pos1 == NULL) {
+			return pos2;
+		}
+		FieldList *tmp = pos1;
+		while(tmp->tail != NULL) {
+			tmp = tmp->tail;
+		}
+		tmp->tail = pos2;
+		return pos1;
+	}
+	else if(isProduction_0(root,MyDEFLIST) == 1) {
+		return NULL;
+	}
+	else {
+		printf("error DefList production\n");
+		return NULL;
+	}
 	return NULL;
+}
+
+
+//handle production "Def -> Specifier DecList SEMI"
+static FieldList *handleDef(CSNode *root) {
+	if(isProduction_3(root,MyDEF,MySPECIFIER,MyDECLIST,MySEMI) == 1) {
+		SpecialType *basicType = NULL;
+		basicType = handleSpecifier(root->firstChild);
+		if(basicType == NULL) {
+			printf("error specifier,fail to handle DecList\n");
+			return NULL;
+		}
+		FieldList *fd_tmp = NULL;
+		fd_tmp = handleDecList(root,basicType);
+		return fd_tmp;
+	}
+	else {
+		printf("error Def production\n");
+		return NULL;
+	}
+}
+
+//handle production "DecList -> ...|... "
+static FieldList *handleDecList(CSNode *root, SpecialType *basicType) {
+	if(isProduction_1(root,MyDECLIST,MyDEC) == 1) {
+		FieldList *fd_tmp = NULL;
+		fd_tmp = handleDec(root->firstChild,basicType);
+		return fd_tmp;
+	}
+	else if(isProduction_3(root,MyDECLIST,MyDEC,MyCOMMA,MyDECLIST) == 1) {
+		FieldList *fd1_tmp, *fd2_tmp;
+		fd1_tmp = handleDec(root->firstChild,basicType);
+		fd2_tmp = handleDecList(root->firstChild->nextSibling->nextSibling,basicType);
+		if(fd1_tmp == NULL) {
+			return fd2_tmp;
+		}
+		//handleDec() just get only one FieldList node pointer
+		fd1_tmp->tail = fd2_tmp;
+		return fd1_tmp;
+	}
+	else {
+		printf("error DecList production\n");
+		return NULL;
+	}
+}
+
+
+//handle production "Dec -> ...|... "
+static FieldList *handleDec(CSNode *root, SpecialType *basicType) {
+	if(isProduction_1(root,MyDEC,MyVARDEC) == 1) {
+		FieldList *fd_tmp = NULL;
+		fd_tmp = handleVarDec(root->firstChild,basicType);
+		return fd_tmp;
+	}
+	else if(isProduction_3(root,MyDEC,MyVARDEC,MyASSIGNOP,MyEXP) == 1) {
+		FieldList *fd_tmp;
+		fd_tmp = handleVarDec(root->firstChild,basicType);
+
+		//handle assignop exp
+
+		return fd_tmp;
+	}
+	else {
+		printf("error Dec production\n");
+		return NULL;
+	}
+}
+
+//handle production "VarDec -> ...|... "
+static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
+	if(isProduction_1(root,MyVARDEC,MyID) == 1) {
+		int emptyFlag = 0;
+		char *name = (root->firstChild->type_union).type_id.p_str;
+		int no_tmp = root->firstChild->lineNo;
+		SYNode *checkFlag = checkSymbolName(emptyFlag,name);
+		if(checkFlag != NULL) {
+			printf("error, the id is same %s\n",name);
+			return NULL;
+		}
+		SymbolType tp_tmp;
+		if(basicType->kind == BASIC && (basicType->u).basic == 0) {
+			tp_tmp = MyINTVAR;
+			SYMBOL_INT *newContent = (SYMBOL_INT *)malloc(sizeof(SYMBOL_INT));
+			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
+		}
+		else if(basicType->kind == BASIC && (basicType->u).basic == 1) {
+			tp_tmp = MyFLOATVAR;
+			SYMBOL_FLOAT *newContent = (SYMBOL_FLOAT *)malloc(sizeof(SYMBOL_FLOAT));
+			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
+		}
+		else if(basicType->kind == ARRAY) {
+			tp_tmp = MyARRAYVAR;
+			SYMBOL_ARRAY *newContent = (SYMBOL_ARRAY *)malloc(sizeof(SYMBOL_ARRAY));
+			newContent->type = basicType;
+			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
+		}
+		else if(basicType->kind == STRUCTURE) {
+			tp_tmp = MySTRUCTVAR;
+			SYMBOL_STRUCTVAR *newContent = (SYMBOL_STRUCTVAR *)malloc(sizeof(SYMBOL_STRUCTVAR));
+			newContent->type = basicType;
+			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
+		}
+		else {
+			printf("error basicType,id:%s has no meaning\n",name);
+			return NULL;
+		}
+	}
+	else if(isProduction_4(root,MyVARDEC,MyVARDEC,MyLB,MyINT,MyRB) == 1) {
+		// int should >= 0
+	}
+	else {
+		printf("error VarDec production\n");
+		return NULL;
+	}
 }
 
 //handle production "Specifier -> ...|... "
@@ -142,7 +267,7 @@ static SpecialType *handleSpecifier(CSNode *root) {
 			char *id = (((root->firstChild)->firstChild)->nextSibling->firstChild->type_union).type_id.p_str;
 			SYNode *checkFlag = checkSymbolName(0,id);
 			if(checkFlag == NULL) {	//not find id in symbol table
-				printf("error ,use structure not defined\n");
+				printf("error??? ,use structure not defined\n");
 				return NULL;
 			} else {
 				if(checkFlag->type == MySTRUCTNAME) {
@@ -197,102 +322,4 @@ void postOrder(CSNode *root) {
 
 
 
-// f is loc of the PoolNode, t -> empty
-int isProduction_0(CSNode *f,TokenType t) {
-	if(f != NULL && f->type == t && f->firstChild == NULL) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-	
-// t -> c1
-int isProduction_1(CSNode *f,TokenType t,TokenType c1) {
-	if(f != NULL && f->type == t
-		     && f->firstChild != NULL
-		     && (f->firstChild)->type == c1
-		     && (f->firstChild)->nextSibling == NULL
-		     ) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
 
-// t -> c1 c2
-int isProduction_2(CSNode *f,TokenType t,TokenType c1,TokenType c2) {
-	if(f != NULL && f->type == t && f->firstChild != NULL) {
-		CSNode *tmp1 = f->firstChild;
-		if(tmp1->type == c1 && tmp1->nextSibling != NULL) {
-			CSNode *tmp2 = tmp1->nextSibling;
-			if(tmp2->type == c2 && tmp2->nextSibling == NULL) {
-				return 1;
-			}
-		}
-	} else {
-		return 0;
-	}
-}
-
-// t -> c1 c2 c3
-int isProduction_3(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3) {
-	if(f != NULL && f->type == t && f->firstChild != NULL) {
-		CSNode *tmp1 = f->firstChild;
-		if(tmp1->type == c1 && tmp1->nextSibling != NULL) {
-			CSNode *tmp2 = tmp1->nextSibling;
-			if(tmp2->type == c2 && tmp2->nextSibling != NULL) {
-				CSNode *tmp3 = tmp2->nextSibling;
-				if(tmp3->type == c3 && tmp3->nextSibling == NULL) {
-					return 1;
-				}
-			}
-		}
-	} else {
-		return 0;
-	}
-}
-
-//f -> c1 c2 c3 c4
-int isProduction_4(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4) {
-	if(f != NULL && f->type == t && f->firstChild != NULL) {
-		CSNode *tmp1 = f->firstChild;
-		if(tmp1->type == c1 && tmp1->nextSibling != NULL) {
-			CSNode *tmp2 = tmp1->nextSibling;
-			if(tmp2->type == c2 && tmp2->nextSibling != NULL) {
-				CSNode *tmp3 = tmp2->nextSibling;
-				if(tmp3->type == c3 && tmp3->nextSibling != NULL) {
-					CSNode *tmp4 = tmp3->nextSibling;
-					if(tmp4->type == c4 && tmp4->nextSibling == NULL) {
-						return 1;
-					}
-				}
-			}
-		}
-	} else {
-		return 0;
-	}
-}
-
-//f -> c1 c2 c3 c4 c5
-int isProduction_5(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5) {
-	if(f != NULL && f->type == t && f->firstChild != NULL) {
-		CSNode *tmp1 = f->firstChild;
-		if(tmp1->type == c1 && tmp1->nextSibling != NULL) {
-			CSNode *tmp2 = tmp1->nextSibling;
-			if(tmp2->type == c2 && tmp2->nextSibling != NULL) {
-				CSNode *tmp3 = tmp2->nextSibling;
-				if(tmp3->type == c3 && tmp3->nextSibling != NULL) {
-					CSNode *tmp4 = tmp3->nextSibling;
-					if(tmp4->type == c4 && tmp4->nextSibling != NULL) {
-						CSNode *tmp5 = tmp4->nextSibling;
-						if(tmp5->type == c5 && tmp5->nextSibling == NULL) {
-							return 1;
-						}
-					}
-				}
-			}
-		}
-	} else {
-		return 0;
-	}
-}
