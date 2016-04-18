@@ -198,7 +198,7 @@ void testSymbol();
 
 
 /* func in semantic.c */
-void preOrder(CSNode *root);
+void preOrderAndAnalysis(CSNode *root);
 void postOrder(CSNode *root);
 
 

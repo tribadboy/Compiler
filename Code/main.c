@@ -17,17 +17,15 @@ int main(int argc, char** argv) {
 	}
 	/* one file to check */
 	yyrestart(f);
-	/*	
-		yydebug = 1  			test mode
-		MY_LEXER_PRINT_FLAG = 1		print every tokens
-	*/
-//	yydebug = 1;
-//	MY_LEXER_PRINT_FLAG = 1;
+
+//	yydebug = 1;			// test mode
+//	MY_LEXER_PRINT_FLAG = 1;	// print every token
 	yyparse();
 	if(MY_LEXER_PRINT_FLAG == 1)	printf("******** show the tree *********\n");
-	if(printTreeFlag == 1)		preOrderPrint(treeRoot);
-//	if(printTreeFlag == 0)	return 1;
-//	preOrder(treeRoot);
-//	testSymbol();
+	if(printTreeFlag == 1) {
+		preOrderPrint(treeRoot);
+		preOrderAndAnalysis(treeRoot);
+		testSymbol();
+	}
 	return 0;
 }
