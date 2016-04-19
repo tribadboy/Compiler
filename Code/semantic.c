@@ -6,16 +6,17 @@
 static void handleExtDef(CSNode *root);
 static SpecialType *handleSpecifier(CSNode *root);
 static SpecialType *handleStructSpecifier(CSNode *root);
-static FieldList *handleDefList(CSNode *root);
-static FieldList *handleDef(CSNode *root);
-static FieldList *handleDecList(CSNode *root, SpecialType *basicType);
-static FieldList *handleDec(CSNode *root, SpecialType *basicType);
-static FieldList *handleVarDec(CSNode *root, SpecialType *basicType);
+static FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list);
+static FieldList *handleDef(CSNode *root, int structFlag, FieldList *list);
+static FieldList *handleDecList(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list);
+static FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list);
+static FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list);
 static FieldList *handleExtDecList(CSNode *root, SpecialType *basicType);
 static void handleFunDec(CSNode *root, SpecialType *rel);
 static FieldList *handleVarList(CSNode *root);
 static FieldList *handleParamDec(CSNode *root);
 static void handleCompSt(CSNode *root, SpecialType *rel);
+static void handleStmtList(CSNode *root, SpecialType *rel);
 
 void preOrderAndAnalysis(CSNode *root) {
 	if(root == NULL) {
@@ -42,16 +43,6 @@ void preOrderAndAnalysis(CSNode *root) {
 	}
 }
 
-//apply a area, get a FieldList
-FieldList *getAndSetFieldList(char *name, SpecialType *type, FieldList *tail) {
-	FieldList *fd = NULL;
-	fd = (FieldList *)malloc(sizeof(FieldList));
-	fd->name = name;
-	fd->type = type;
-	fd->tail = tail;
-	return fd;
-}
-	
 //handle production "ExtDef -> ... | ..."
 static void handleExtDef(CSNode *root) {
 
@@ -65,15 +56,11 @@ static void handleExtDef(CSNode *root) {
 	else if(isProduction_2(root,MyEXTDEF,MySPECIFIER,MySEMI) == 1) {
 		SpecialType *basicType = NULL;
 		basicType = handleSpecifier(root->firstChild);
-
-		//just define struct, ??? shengming
 	}
 	else if(isProduction_3(root,MyEXTDEF,MySPECIFIER,MyFUNDEC,MyCOMPST) == 1) {
 		SpecialType *rel_type = NULL;
 		rel_type = handleSpecifier(root->firstChild);
 		handleFunDec(root->firstChild->nextSibling,rel_type);
-		
-		//handle CompSt
 		handleCompSt(root->firstChild->nextSibling->nextSibling,rel_type);
 
 	}
@@ -86,18 +73,19 @@ static void handleExtDef(CSNode *root) {
 //handle production "FunDec -> ...|... "
 static void handleFunDec(CSNode *root, SpecialType *rel) {
 	if(isProduction_4(root,MyFUNDEC,MyID,MyLP,MyVARLIST,MyRP) == 1) {
-		char *name = (root->firstChild->type_union).type_id.p_str;
+		CSNode *id_tmp = root->firstChild;
+		char *name = (id_tmp->type_union).type_id.p_str;
 		int emptyFlag = 0;
 		SYNode *checkFlag = checkSymbolName(emptyFlag,name);
 		if(checkFlag != NULL) {
 			//func name is same, error
-			printf("error, build a func whose name is same %s\n",name);
+			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",id_tmp->lineNo,name);
 			return;
 		} else {
 			FieldList *fd_tmp = handleVarList(root->firstChild->nextSibling->nextSibling);
-			//should modify, return NULL is error
+			//return NULL is error
 			if(fd_tmp == NULL) {
-				printf("error,the param of func has sth wrong\n");
+				//the param of func is wrong, not store it
 				return;
 			}
 			SYMBOL_FUNC *newContent = (SYMBOL_FUNC *)malloc(sizeof(SYMBOL_FUNC));
@@ -113,7 +101,7 @@ static void handleFunDec(CSNode *root, SpecialType *rel) {
 		int emptyFlag = 0;
 		SYNode *checkFlag = checkSymbolName(emptyFlag,name);
 		if(checkFlag != NULL) {
-			printf("error,build a func whose name is same %s\n",name);
+			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",root->firstChild->lineNo,name);
 			return;
 		} else {
 			FieldList *fd_tmp = NULL;
@@ -136,25 +124,28 @@ static void handleFunDec(CSNode *root, SpecialType *rel) {
 static void handleCompSt(CSNode *root, SpecialType *rel) {
 	if(isProduction_4(root,MyCOMPST,MyLC,MyDEFLIST,MySTMTLIST,MyRC) == 1) {
 		FieldList *fd = NULL;
-		fd = handleDefList(root->firstChild->nextSibling);
-		//do sth
+		fd = handleDefList(root->firstChild->nextSibling,0,NULL);
+		handleStmtList(root->firstChild->nextSibling->nextSibling,rel);
 
 	}
 	else if(isProduction_2(root,MyCOMPST,MyLC,MyRC) == 1) { 
-		printf("error, func has no return value at line %d\n",root->firstChild->nextSibling->lineNo);
+		//the func is empty { }, no return value, do nothing
 	}
 	else if(isProduction_3(root,MyCOMPST,MyLC,MyDEFLIST,MyRC) == 1) {
 		FieldList *fd = NULL;
-		fd = handleDefList(root->firstChild->nextSibling);
-		printf("error, func has no return value at line %d\n",root->firstChild->nextSibling->nextSibling->lineNo);
+		fd = handleDefList(root->firstChild->nextSibling,0,NULL);
+		//no return value
 	}
 	else if(isProduction_3(root,MyCOMPST,MyLC,MySTMTLIST,MyRC) == 1) {
-		//do sth
-
+		handleStmtList(root->firstChild->nextSibling,rel);
 	}
 	else {
 		printf("error CompSt production\n");
 	}
+}
+
+//handle production "StmtList -> ...|... "
+static void handleStmtList(CSNode *root, SpecialType *rel) {
 }
 
 //handle production "VarList -> ...|... "
@@ -177,7 +168,6 @@ static FieldList *handleVarList(CSNode *root) {
 	}
 	else {
 		printf("error VarList production\n");
-		printf("ttt%dttt%dttt\n",root->lineNo,root->type);
 		return NULL;
 	}
 	return NULL;
@@ -189,7 +179,7 @@ FieldList *handleParamDec(CSNode *root) {
 		SpecialType *basicType = NULL;
 		basicType = handleSpecifier(root->firstChild);
 		FieldList *fd = NULL;
-		fd = handleVarDec(root->firstChild->nextSibling,basicType);
+		fd = handleVarDec(root->firstChild->nextSibling,basicType,0,NULL);
 		return fd;
 	}
 	else {
@@ -199,29 +189,20 @@ FieldList *handleParamDec(CSNode *root) {
 }
 
 //handle production "DefList -> Def DefList | empty"
-static FieldList *handleDefList(CSNode *root){
+static FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list) {
 	if(isProduction_2(root,MyDEFLIST,MyDEF,MyDEFLIST) == 1) {
-		FieldList *pos1, *pos2;
-		pos1 = handleDef(root->firstChild);
-		pos2 = handleDefList(root->firstChild->nextSibling);
-		if(pos1 == NULL) {
-			return pos2;
-		}
-		FieldList *tmp = pos1;
-		while(tmp->tail != NULL) {
-			tmp = tmp->tail;
-		}
-		tmp->tail = pos2;
-		return pos1;
+		FieldList *newList = NULL;
+		newList = handleDef(root->firstChild,structFlag,list);
+		newList = handleDefList(root->firstChild->nextSibling,structFlag,newList);
+		return newList;
 	}
 	else if(isProduction_1(root,MyDEFLIST,MyDEF) == 1) {
 		FieldList *fd = NULL;
-		fd = handleDef(root->firstChild);
+		fd = handleDef(root->firstChild,structFlag,list);
 		return fd;
 	}
 	else {
 		printf("error DefList production\n");
-		//printf("error line %d, type %d\n",root->lineNo,root->type);
 		return NULL;
 	}
 	return NULL;
@@ -229,16 +210,16 @@ static FieldList *handleDefList(CSNode *root){
 
 
 //handle production "Def -> Specifier DecList SEMI"
-static FieldList *handleDef(CSNode *root) {
+static FieldList *handleDef(CSNode *root, int structFlag, FieldList *list) {
 	if(isProduction_3(root,MyDEF,MySPECIFIER,MyDECLIST,MySEMI) == 1) {
 		SpecialType *basicType = NULL;
 		basicType = handleSpecifier(root->firstChild);
 		if(basicType == NULL) {
-			printf("error specifier,fail to handle DecList\n");
+			//type is error, not store var in DecList
 			return NULL;
 		}
 		FieldList *fd_tmp = NULL;
-		fd_tmp = handleDecList(root->firstChild->nextSibling,basicType);
+		fd_tmp = handleDecList(root->firstChild->nextSibling,basicType,structFlag,list);
 		return fd_tmp;
 	}
 	else {
@@ -248,26 +229,20 @@ static FieldList *handleDef(CSNode *root) {
 }
 
 //handle production "DecList -> ...|... "
-static FieldList *handleDecList(CSNode *root, SpecialType *basicType) {
+static FieldList *handleDecList(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
 	if(isProduction_1(root,MyDECLIST,MyDEC) == 1) {
 		FieldList *fd_tmp = NULL;
-		fd_tmp = handleDec(root->firstChild,basicType);
+		fd_tmp = handleDec(root->firstChild,basicType,structFlag,list);
 		return fd_tmp;
 	}
 	else if(isProduction_3(root,MyDECLIST,MyDEC,MyCOMMA,MyDECLIST) == 1) {
-		FieldList *fd1_tmp, *fd2_tmp;
-		fd1_tmp = handleDec(root->firstChild,basicType);
-		fd2_tmp = handleDecList(root->firstChild->nextSibling->nextSibling,basicType);
-		if(fd1_tmp == NULL) {
-			return fd2_tmp;
-		}
-		//handleDec() just get only one FieldList node pointer
-		fd1_tmp->tail = fd2_tmp;
-		return fd1_tmp;
+		FieldList *newList = NULL;
+		newList = handleDec(root->firstChild,basicType,structFlag,list);
+		newList = handleDecList(root->firstChild->nextSibling->nextSibling,basicType,structFlag,newList);
+		return newList;
 	}
 	else {
 		printf("error DecList production\n");
-		printf("eee%deee%deee\n",root->lineNo,root->type);
 		return NULL;
 	}
 }
@@ -276,12 +251,12 @@ static FieldList *handleDecList(CSNode *root, SpecialType *basicType) {
 static FieldList *handleExtDecList(CSNode *root, SpecialType *basicType) {
 	if(isProduction_1(root,MyEXTDECLIST,MyVARDEC) == 1) {
 		FieldList *fd_tmp = NULL;
-		fd_tmp = handleVarDec(root->firstChild,basicType);
+		fd_tmp = handleVarDec(root->firstChild,basicType,0,NULL);
 		return fd_tmp;
 	}
 	else if(isProduction_3(root,MyEXTDECLIST,MyVARDEC,MyCOMMA,MyEXTDECLIST) == 1) {
 		FieldList *fd1_tmp, *fd2_tmp;
-		fd1_tmp = handleVarDec(root->firstChild,basicType);
+		fd1_tmp = handleVarDec(root->firstChild,basicType,0,NULL);
 		fd2_tmp = handleExtDecList(root->firstChild->nextSibling->nextSibling,basicType);
 		if(fd1_tmp == NULL) {
 			return fd2_tmp;
@@ -297,16 +272,20 @@ static FieldList *handleExtDecList(CSNode *root, SpecialType *basicType) {
 }
 
 //handle production "Dec -> ...|... "
-static FieldList *handleDec(CSNode *root, SpecialType *basicType) {
+static FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
 	if(isProduction_1(root,MyDEC,MyVARDEC) == 1) {
 		FieldList *fd_tmp = NULL;
-		fd_tmp = handleVarDec(root->firstChild,basicType);
+		fd_tmp = handleVarDec(root->firstChild,basicType,structFlag,list);
 		return fd_tmp;
 	}
 	else if(isProduction_3(root,MyDEC,MyVARDEC,MyASSIGNOP,MyEXP) == 1) {
 		FieldList *fd_tmp;
-		fd_tmp = handleVarDec(root->firstChild,basicType);
-
+		fd_tmp = handleVarDec(root->firstChild,basicType,structFlag,list);
+		if(structFlag == 1) {
+			printf("Error type 15 at Line %d: Initialization in the struct definition.\n",root->firstChild->nextSibling->lineNo);
+			return fd_tmp;
+		}
+		//do sth
 		//handle assignop exp
 
 		return fd_tmp;
@@ -318,14 +297,18 @@ static FieldList *handleDec(CSNode *root, SpecialType *basicType) {
 }
 
 //handle production "VarDec -> ...|... "
-static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
+static FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
 	if(isProduction_1(root,MyVARDEC,MyID) == 1) {
 		int emptyFlag = 0;
 		char *name = (root->firstChild->type_union).type_id.p_str;
 		int no_tmp = root->firstChild->lineNo;
 		SYNode *checkFlag = checkSymbolName(emptyFlag,name);
 		if(checkFlag != NULL) {
-			printf("error, the id is same %s\n",name);
+			if(structFlag == 1 && checkSameNameFL(name,list) != NULL) {
+				printf("Error type 15 at Line %d: Redefined field \"%s\".\n",root->firstChild->lineNo,name);
+				return NULL;
+			}
+			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",root->firstChild->lineNo,name);
 			return NULL;
 		}
 		SymbolType tp_tmp;
@@ -334,14 +317,14 @@ static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
 			SYMBOL_INT *newContent = (SYMBOL_INT *)malloc(sizeof(SYMBOL_INT));
 			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
 			FieldList *fd = getAndSetFieldList(name,basicType,NULL);
-			return fd;
+			return linkList(list,fd);
 		}
 		else if(basicType->kind == BASIC && (basicType->u).basic == 1) {
 			tp_tmp = MyFLOATVAR;
 			SYMBOL_FLOAT *newContent = (SYMBOL_FLOAT *)malloc(sizeof(SYMBOL_FLOAT));
 			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
 			FieldList *fd = getAndSetFieldList(name,basicType,NULL);
-			return fd;
+			return linkList(list,fd);
 		}
 		else if(basicType->kind == ARRAY) {
 			tp_tmp = MyARRAYVAR;
@@ -349,7 +332,7 @@ static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
 			newContent->type = basicType;
 			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
 			FieldList *fd = getAndSetFieldList(name,basicType,NULL);
-			return fd;
+			return linkList(list,fd);
 		}
 		else if(basicType->kind == STRUCTURE) {
 			tp_tmp = MySTRUCTVAR;
@@ -357,7 +340,7 @@ static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
 			newContent->type = basicType;
 			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
 			FieldList *fd = getAndSetFieldList(name,basicType,NULL);
-			return fd;
+			return linkList(list,fd);
 		}
 		else {
 			printf("error basicType,id:%s has no meaning\n",name);
@@ -366,9 +349,10 @@ static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
 	}
 	else if(isProduction_4(root,MyVARDEC,MyVARDEC,MyLB,MyINT,MyRB) == 1) {
 		// int should > 0
-		int size = (root->firstChild->nextSibling->nextSibling->type_union).type_int.value;
+		CSNode *int_tmp = root->firstChild->nextSibling->nextSibling;
+		int size = (int_tmp->type_union).type_int.value;
 		if(size <= 0) {
-			printf("error array size %d, should bigger than 0.\n",size);
+			printf("Error at Line %d: Array size %d should bigger than 0.\n",int_tmp->lineNo,size);
 			return NULL;
 		}
 		SpecialType *basicType_tmp = NULL;
@@ -377,7 +361,7 @@ static FieldList *handleVarDec(CSNode *root, SpecialType *basicType) {
 		(basicType_tmp->u).array.elem = basicType;
 		(basicType_tmp->u).array.size = size;
 		FieldList *fd_tmp = NULL;
-		fd_tmp = handleVarDec(root->firstChild,basicType_tmp);
+		fd_tmp = handleVarDec(root->firstChild,basicType_tmp,structFlag,list);
 		return fd_tmp;
 	}
 	else {
@@ -435,7 +419,7 @@ static SpecialType *handleStructSpecifier(CSNode *root) {
 		SYNode *checkFlag = checkSymbolName(emptyFlag,name);
 		if(checkFlag != NULL) {
 			//print error ,name is same
-			printf("error, build a struct whose name is be used early at line %d.\n",opttag_tmp->firstChild->lineNo);
+			printf("Error type 16 at Line %d: Duplicated name \"%s\".\n",opttag_tmp->firstChild->lineNo,name);
 			addSymbolFlag = 0;
 		}
 		else {
@@ -444,7 +428,7 @@ static SpecialType *handleStructSpecifier(CSNode *root) {
 		FieldList *fd_tmp = NULL;
 		CSNode *dl_tmp = root->firstChild->nextSibling->nextSibling->nextSibling;
 		if(dl_tmp->type == MyDEFLIST) {
-			fd_tmp = handleDefList(dl_tmp);
+			fd_tmp = handleDefList(dl_tmp,1,NULL);
 		}
 		basicType = (SpecialType *)malloc(sizeof(SpecialType));
 		basicType->kind = STRUCTURE;
@@ -466,7 +450,7 @@ static SpecialType *handleStructSpecifier(CSNode *root) {
 		FieldList *fd_tmp = NULL;
 		CSNode *dl_tmp = root->firstChild->nextSibling->nextSibling;
 		if(dl_tmp->type == MyDEFLIST) {
-			fd_tmp = handleDefList(dl_tmp);
+			fd_tmp = handleDefList(dl_tmp,1,NULL);
 		}
 		basicType = (SpecialType *)malloc(sizeof(SpecialType));
 		basicType->kind = STRUCTURE;
@@ -488,14 +472,12 @@ static SpecialType *handleStructSpecifier(CSNode *root) {
 		SYNode *checkFlag = checkSymbolName(0,name);
 		if(checkFlag == NULL) {
 			//not find symbol in the table
-
-			//??? consider shengming
-			printf("error???, use struct not defined at line %d.\n",id_tmp->lineNo);
+			printf("Error type 17 at Line %d: Undefined structure \"%s\".\n",id_tmp->lineNo,name);
 			return NULL;
 		}
 		else {
 			if(checkFlag->type != MySTRUCTNAME) {
-				printf("error id is same,but not same type at line %d.\n",id_tmp->lineNo);
+				printf("Error type 17 at Line %d: Undefined structure and the name \"%s\" is duplicated.\n",id_tmp->lineNo,name); 
 				return NULL;
 			}
 			else {

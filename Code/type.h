@@ -212,3 +212,7 @@ int isProduction_5(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,
 int isProduction_6(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5,TokenType c6);
 
 
+/* func in FieldList.c */
+FieldList *getAndSetFieldList(char *name, SpecialType *type, FieldList *tail);
+FieldList *checkSameNameFL(char *name, FieldList *list);
+FieldList *linkList(FieldList *list1, FieldList *list2);
