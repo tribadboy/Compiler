@@ -113,12 +113,12 @@ typedef struct SpecialType {
 
 //symbol type
 struct SYNode;
-typedef struct SYMBOL_INT { int value; } SYMBOL_INT;
-typedef struct SYMBOL_FLOAT { float value; } SYMBOL_FLOAT;
-typedef struct SYMBOL_ARRAY { SpecialType *type; void *value; } SYMBOL_ARRAY;
+typedef struct SYMBOL_INT { /*int value;*/ } SYMBOL_INT;
+typedef struct SYMBOL_FLOAT { /*float value;*/ } SYMBOL_FLOAT;
+typedef struct SYMBOL_ARRAY { SpecialType *type; /*void *value;*/ } SYMBOL_ARRAY;
 typedef struct SYMBOL_STRUCTNAME { SpecialType *type;} SYMBOL_STRUCTNAME;
-typedef struct SYMBOL_STRUCTVAR { SpecialType *type; void *value; } SYMBOL_STRUCTVAR;
-typedef struct SYMBOL_FUNC { SpecialType *rel; FieldList *param; } SYMBOL_FUNC;
+typedef struct SYMBOL_STRUCTVAR { SpecialType *type; /*void *value;*/ } SYMBOL_STRUCTVAR;
+typedef struct SYMBOL_FUNC { SpecialType *rel; FieldList *param; int param_num; } SYMBOL_FUNC;
 
 typedef struct CSNode {
 	enum TokenType type;
@@ -197,19 +197,15 @@ void addSymbol(SymbolType t, int emptyFlag, char *name, int no, void *con);
 void testSymbol();
 
 
-/* func in semantic.c */
-void preOrderAndAnalysis(CSNode *root);
-void postOrder(CSNode *root);
-
-
 /* func in production.c */
-int isProduction_0(CSNode *f,TokenType t);
 int isProduction_1(CSNode *f,TokenType t,TokenType c1);
 int isProduction_2(CSNode *f,TokenType t,TokenType c1,TokenType c2);
 int isProduction_3(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3);
 int isProduction_4(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4);
 int isProduction_5(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5);
 int isProduction_6(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5,TokenType c6);
+int isProduction_7(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,TokenType c4,TokenType c5,TokenType c6,TokenType c7);
+int getParamNum(CSNode *root);
 
 
 /* func in FieldList.c */

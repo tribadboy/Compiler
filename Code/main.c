@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "type.h"
+#include "semantic.h"
 
 extern int yyparse(void);
 extern void yyrestart(FILE *input_file);

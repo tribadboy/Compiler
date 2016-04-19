@@ -2,21 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "type.h"
-
-static void handleExtDef(CSNode *root);
-static SpecialType *handleSpecifier(CSNode *root);
-static SpecialType *handleStructSpecifier(CSNode *root);
-static FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list);
-static FieldList *handleDef(CSNode *root, int structFlag, FieldList *list);
-static FieldList *handleDecList(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list);
-static FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list);
-static FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list);
-static FieldList *handleExtDecList(CSNode *root, SpecialType *basicType);
-static void handleFunDec(CSNode *root, SpecialType *rel);
-static FieldList *handleVarList(CSNode *root);
-static FieldList *handleParamDec(CSNode *root);
-static void handleCompSt(CSNode *root, SpecialType *rel);
-static void handleStmtList(CSNode *root, SpecialType *rel);
+#include "semantic.h"
 
 void preOrderAndAnalysis(CSNode *root) {
 	if(root == NULL) {
@@ -44,7 +30,7 @@ void preOrderAndAnalysis(CSNode *root) {
 }
 
 //handle production "ExtDef -> ... | ..."
-static void handleExtDef(CSNode *root) {
+void handleExtDef(CSNode *root) {
 
 	if(isProduction_3(root,MyEXTDEF,MySPECIFIER,MyEXTDECLIST,MySEMI) == 1) {
 		SpecialType *basicType = NULL;
@@ -71,7 +57,7 @@ static void handleExtDef(CSNode *root) {
 }
 
 //handle production "FunDec -> ...|... "
-static void handleFunDec(CSNode *root, SpecialType *rel) {
+void handleFunDec(CSNode *root, SpecialType *rel) {
 	if(isProduction_4(root,MyFUNDEC,MyID,MyLP,MyVARLIST,MyRP) == 1) {
 		CSNode *id_tmp = root->firstChild;
 		char *name = (id_tmp->type_union).type_id.p_str;
@@ -91,6 +77,7 @@ static void handleFunDec(CSNode *root, SpecialType *rel) {
 			SYMBOL_FUNC *newContent = (SYMBOL_FUNC *)malloc(sizeof(SYMBOL_FUNC));
 			newContent->rel = rel;
 			newContent->param = fd_tmp;
+			newContent->param_num = getParamNum(root->firstChild->nextSibling->nextSibling);
 			int no_tmp = root->firstChild->lineNo;
 			addSymbol(MyFUNCNAME,emptyFlag,name,no_tmp,newContent);
 			return;
@@ -108,6 +95,7 @@ static void handleFunDec(CSNode *root, SpecialType *rel) {
 			SYMBOL_FUNC *newContent = (SYMBOL_FUNC *)malloc(sizeof(SYMBOL_FUNC));
 			newContent->rel = rel;
 			newContent->param = NULL;
+			newContent->param_num = 0;
 			int no_tmp = root->firstChild->lineNo;
 			addSymbol(MyFUNCNAME,emptyFlag,name,no_tmp,newContent);
 			return;
@@ -121,7 +109,7 @@ static void handleFunDec(CSNode *root, SpecialType *rel) {
 
 //handle production "CompSt -> ...|... "
 //DefList and StmtList could be empty
-static void handleCompSt(CSNode *root, SpecialType *rel) {
+void handleCompSt(CSNode *root, SpecialType *rel) {
 	if(isProduction_4(root,MyCOMPST,MyLC,MyDEFLIST,MySTMTLIST,MyRC) == 1) {
 		FieldList *fd = NULL;
 		fd = handleDefList(root->firstChild->nextSibling,0,NULL);
@@ -145,11 +133,22 @@ static void handleCompSt(CSNode *root, SpecialType *rel) {
 }
 
 //handle production "StmtList -> ...|... "
-static void handleStmtList(CSNode *root, SpecialType *rel) {
+void handleStmtList(CSNode *root, SpecialType *rel) {
+	if(isProduction_2(root,MySTMTLIST,MySTMT,MySTMTLIST) == 1) {
+		handleStmt(root->firstChild,rel);
+		handleStmtList(root->firstChild->nextSibling,rel);
+	}
+	else if(isProduction_1(root,MySTMTLIST,MySTMT) == 1) {
+		handleStmt(root->firstChild,rel);
+	}
+	else {
+		printf("error StmtList production\n");
+	}
 }
 
+
 //handle production "VarList -> ...|... "
-static FieldList *handleVarList(CSNode *root) {
+FieldList *handleVarList(CSNode *root) {
 	if(isProduction_3(root,MyVARLIST,MyPARAMDEC,MyCOMMA,MyVARLIST) == 1) {
 		FieldList *fd1_tmp, *fd2_tmp;
 		fd1_tmp = handleParamDec(root->firstChild);
@@ -189,7 +188,7 @@ FieldList *handleParamDec(CSNode *root) {
 }
 
 //handle production "DefList -> Def DefList | empty"
-static FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list) {
+FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list) {
 	if(isProduction_2(root,MyDEFLIST,MyDEF,MyDEFLIST) == 1) {
 		FieldList *newList = NULL;
 		newList = handleDef(root->firstChild,structFlag,list);
@@ -210,7 +209,7 @@ static FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list) {
 
 
 //handle production "Def -> Specifier DecList SEMI"
-static FieldList *handleDef(CSNode *root, int structFlag, FieldList *list) {
+FieldList *handleDef(CSNode *root, int structFlag, FieldList *list) {
 	if(isProduction_3(root,MyDEF,MySPECIFIER,MyDECLIST,MySEMI) == 1) {
 		SpecialType *basicType = NULL;
 		basicType = handleSpecifier(root->firstChild);
@@ -229,7 +228,7 @@ static FieldList *handleDef(CSNode *root, int structFlag, FieldList *list) {
 }
 
 //handle production "DecList -> ...|... "
-static FieldList *handleDecList(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
+FieldList *handleDecList(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
 	if(isProduction_1(root,MyDECLIST,MyDEC) == 1) {
 		FieldList *fd_tmp = NULL;
 		fd_tmp = handleDec(root->firstChild,basicType,structFlag,list);
@@ -248,7 +247,7 @@ static FieldList *handleDecList(CSNode *root, SpecialType *basicType, int struct
 }
 
 //handle production "ExtDecList -> ...|..."
-static FieldList *handleExtDecList(CSNode *root, SpecialType *basicType) {
+FieldList *handleExtDecList(CSNode *root, SpecialType *basicType) {
 	if(isProduction_1(root,MyEXTDECLIST,MyVARDEC) == 1) {
 		FieldList *fd_tmp = NULL;
 		fd_tmp = handleVarDec(root->firstChild,basicType,0,NULL);
@@ -272,7 +271,7 @@ static FieldList *handleExtDecList(CSNode *root, SpecialType *basicType) {
 }
 
 //handle production "Dec -> ...|... "
-static FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
+FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
 	if(isProduction_1(root,MyDEC,MyVARDEC) == 1) {
 		FieldList *fd_tmp = NULL;
 		fd_tmp = handleVarDec(root->firstChild,basicType,structFlag,list);
@@ -297,7 +296,7 @@ static FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag
 }
 
 //handle production "VarDec -> ...|... "
-static FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
+FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, FieldList *list) {
 	if(isProduction_1(root,MyVARDEC,MyID) == 1) {
 		int emptyFlag = 0;
 		char *name = (root->firstChild->type_union).type_id.p_str;
@@ -372,7 +371,7 @@ static FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structF
 
 //handle production "Specifier -> ...|... "
 //could apply a area if it is successful, but not give back
-static SpecialType *handleSpecifier(CSNode *root) {
+SpecialType *handleSpecifier(CSNode *root) {
 	SpecialType *basicType = NULL;
 	if(isProduction_1(root,MySPECIFIER,MyTYPE) == 1) {
 		char *token_tmp = (root->firstChild->type_union).type_type.token;
@@ -407,7 +406,7 @@ static SpecialType *handleSpecifier(CSNode *root) {
 //handle production "StructSpecifier -> ...|... "
 //apply a area if it is successful, but not give back
 //OptTag could be empty
-static SpecialType *handleStructSpecifier(CSNode *root) {
+SpecialType *handleStructSpecifier(CSNode *root) {
 	SpecialType *basicType = NULL;
 
 	//OptTag is not empty
