@@ -22,4 +22,6 @@ void handleStmtList(CSNode *root, SpecialType *rel);
 int compareSpecialType(SpecialType *type1, SpecialType *type2);
 void handleStmt(CSNode *root, SpecialType *rel);
 SpecialType *handleExp(CSNode *root);
+FieldList *handleArgs(CSNode *root);
+int getCountOfArgs(CSNode *root);
 

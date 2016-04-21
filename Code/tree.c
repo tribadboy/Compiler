@@ -6,13 +6,13 @@
 #define P_STACK_SIZE  80
 #define MAX_CHARS_IN_ID 36
 
-StackNode pstack[P_STACK_SIZE];
-int p_top = -1;
+static StackNode pstack[P_STACK_SIZE];
+static int p_top = -1;
 int printTreeFlag = 1;
 
 void push(CSNode *p, int h) {
 	if(p_top + 1 == P_STACK_SIZE) {
-		printf("stack overflow\n");
+		printf("stack \"pstack\" overflow\n");
 		return;
 	}
 	p_top++;

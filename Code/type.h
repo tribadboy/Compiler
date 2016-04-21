@@ -113,8 +113,8 @@ typedef struct SpecialType {
 
 //symbol type
 struct SYNode;
-typedef struct SYMBOL_INT { /*int value;*/ } SYMBOL_INT;
-typedef struct SYMBOL_FLOAT { /*float value;*/ } SYMBOL_FLOAT;
+typedef struct SYMBOL_INT { SpecialType *type; /*int value;*/ } SYMBOL_INT;
+typedef struct SYMBOL_FLOAT { SpecialType *type; /*float value;*/ } SYMBOL_FLOAT;
 typedef struct SYMBOL_ARRAY { SpecialType *type; /*void *value;*/ } SYMBOL_ARRAY;
 typedef struct SYMBOL_STRUCTNAME { SpecialType *type;} SYMBOL_STRUCTNAME;
 typedef struct SYMBOL_STRUCTVAR { SpecialType *type; /*void *value;*/ } SYMBOL_STRUCTVAR;
@@ -212,3 +212,4 @@ int getParamNum(CSNode *root);
 FieldList *getAndSetFieldList(char *name, SpecialType *type, FieldList *tail);
 FieldList *checkSameNameFL(char *name, FieldList *list);
 FieldList *linkList(FieldList *list1, FieldList *list2);
+int compareFieldList(FieldList *fd1, FieldList *fd2);

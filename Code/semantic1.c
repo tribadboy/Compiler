@@ -314,6 +314,7 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 		if(basicType->kind == BASIC && (basicType->u).basic == 0) {
 			tp_tmp = MyINTVAR;
 			SYMBOL_INT *newContent = (SYMBOL_INT *)malloc(sizeof(SYMBOL_INT));
+			newContent->type = basicType;
 			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
 			FieldList *fd = getAndSetFieldList(name,basicType,NULL);
 			return linkList(list,fd);
@@ -321,6 +322,7 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 		else if(basicType->kind == BASIC && (basicType->u).basic == 1) {
 			tp_tmp = MyFLOATVAR;
 			SYMBOL_FLOAT *newContent = (SYMBOL_FLOAT *)malloc(sizeof(SYMBOL_FLOAT));
+			newContent->type = basicType;
 			addSymbol(tp_tmp,emptyFlag,name,no_tmp,newContent);
 			FieldList *fd = getAndSetFieldList(name,basicType,NULL);
 			return linkList(list,fd);

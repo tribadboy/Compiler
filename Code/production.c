@@ -31,9 +31,8 @@ int isProduction_1(CSNode *f,TokenType t,TokenType c1) {
 		     && (f->firstChild)->nextSibling == NULL
 		     ) {
 		return 1;
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 // t -> c1 c2
@@ -46,9 +45,8 @@ int isProduction_2(CSNode *f,TokenType t,TokenType c1,TokenType c2) {
 				return 1;
 			}
 		}
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 // t -> c1 c2 c3
@@ -64,9 +62,8 @@ int isProduction_3(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3)
 				}
 			}
 		}
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 //f -> c1 c2 c3 c4
@@ -85,9 +82,8 @@ int isProduction_4(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,
 				}
 			}
 		}
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 //f -> c1 c2 c3 c4 c5
@@ -109,9 +105,8 @@ int isProduction_5(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,
 				}
 			}
 		}
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 //f -> c1 c2 c3 c4 c5 c6
@@ -136,9 +131,8 @@ int isProduction_6(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,
 				}
 			}
 		}
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 //f -> c1 c2 c3 c4 c5 c6 c7
@@ -166,7 +160,8 @@ int isProduction_7(CSNode *f,TokenType t,TokenType c1,TokenType c2,TokenType c3,
 				}
 			}
 		}
-	} else {
-		return 0;
 	}
+	return 0;
 }
+
+
