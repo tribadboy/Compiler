@@ -24,9 +24,9 @@ int main(int argc, char** argv) {
 	yyparse();
 	if(MY_LEXER_PRINT_FLAG == 1)	printf("******** show the tree *********\n");
 	if(printTreeFlag == 1) {
-		preOrderPrint(treeRoot);
+		//preOrderPrint(treeRoot);
 		preOrderAndAnalysis(treeRoot);
-		testSymbol();
+		//testSymbol();
 	}
 	return 0;
 }

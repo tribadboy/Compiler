@@ -7,7 +7,7 @@
 //compare two specialType, equal return 1, else return 0
 int compareSpecialType(SpecialType *type1, SpecialType *type2) {
 	if(type1 == NULL || type2 == NULL) {
-		printf("type is NULL, fail to compare\n");
+		//printf("type is NULL, fail to compare\n");
 		return 0;
 	}
 	if(type1->kind == type2->kind) {
@@ -49,7 +49,7 @@ int compareSpecialType(SpecialType *type1, SpecialType *type2) {
 		}
 	}
 	else {
-		printf("type cannot match\n");
+		//printf("type cannot match\n");
 		return 0;
 	}
 }
@@ -76,12 +76,12 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 		SpecialType *expType = NULL;
 		expType = handleExp(expNode);
 		if(expType == NULL) {
-			printf("type error follow if(\n");
+			//printf("type error follow if(\n");
 			handleStmt(stmtNode,rel);
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
-			printf("type is not a int, cannot follow if(\n");
+			printf("Error at Line %d: Only integer can be the condition for \"if(condition)\".\n",expNode->lineNo);
 		}
 		handleStmt(stmtNode,rel);
 	}
@@ -92,13 +92,13 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 		SpecialType *expType = NULL;
 		expType = handleExp(expNode);
 		if(expType == NULL) {
-			printf("type error follow if(\n");
+			//printf("type error follow if(\n");
 			handleStmt(stmt1Node,rel);
 			handleStmt(stmt2Node,rel);
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
-			printf("type is not int,cannot follow if(\n");
+			printf("Error at Line %d: Only interger can be the condition for \"if(condition)\".\n",expNode->lineNo);
 		}
 		handleStmt(stmt1Node,rel);
 		handleStmt(stmt2Node,rel);
@@ -109,12 +109,12 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 		SpecialType *expType = NULL;
 		expType = handleExp(expNode);
 		if(expType == NULL) {
-			printf("type error follow while(\n");
+			//printf("type error follow while(\n");
 			handleStmt(stmtNode,rel);
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
-			printf("type is not int, cannot follow while(\n");
+			printf("Error at Line %d: Only integer can be the condition for \"while(condition)\".\n",expNode->lineNo);
 		}
 		handleStmt(stmtNode,rel);
 	}
@@ -139,7 +139,7 @@ SpecialType *handleExp(CSNode *root) {
 			return NULL;
 		}
 		if(ltype == NULL || rtype == NULL) {
-			printf("left or right has a error, =\n");
+			//printf("left or right has a error, =\n");
 			return NULL;
 		}
 		if(compareSpecialType(ltype,rtype) == 0) {
@@ -157,19 +157,19 @@ SpecialType *handleExp(CSNode *root) {
 		ltype = handleExp(lexp);
 		rtype = handleExp(rexp);
 		if(ltype == NULL || rtype == NULL) {
-			printf("left or right type has error, || &&\n");
+			//printf("left or right type has error, || &&\n");
 			return NULL;
 		}
 		if(compareSpecialType(ltype,rtype) == 0) {
-			printf("left and right not a same type\n");
+			printf("Error type 7 at Line %d: Type mismatched for operands.\n",lexp->nextSibling->lineNo);
 			return NULL;
 		}
 		if(!(ltype->kind == BASIC && (ltype->u).basic == 0)) {
-			printf("left logic error\n");
+			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The left operand should be an integer.\n",lexp->lineNo);
 			return NULL;
 		}
 		if(!(rtype->kind == BASIC && (rtype->u).basic == 0)) {
-			printf("right logic error\n");
+			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The right operand should be an integer.\n",rexp->lineNo);
 			return NULL;
 		}
 		return ltype;
@@ -186,7 +186,7 @@ SpecialType *handleExp(CSNode *root) {
 		ltype = handleExp(lexp);
 		rtype = handleExp(rexp);
 		if(ltype == NULL || rtype == NULL) {
-			printf("left or right type has error,+-\n");
+			//printf("left or right type has error,+-\n");
 			return NULL;
 		}
 		if(compareSpecialType(ltype,rtype) == 0) {
@@ -194,11 +194,11 @@ SpecialType *handleExp(CSNode *root) {
 			return NULL;
 		}
 		if(ltype->kind != BASIC) {
-			printf("left not a int or float\n");
+			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The left operand should be an interger or float.\n",lexp->lineNo);
 			return NULL;
 		}
 		if(rtype->kind != BASIC) {
-			printf("right not a int or float\n");
+			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The right operand should be an integer or float.\n",rexp->lineNo);
 			return NULL;
 		}
 		return ltype;
@@ -210,26 +210,28 @@ SpecialType *handleExp(CSNode *root) {
 	}
 	else if(isProduction_2(root,MyEXP,MyMINUS,MyEXP) == 1) {
 		SpecialType *type = NULL;
-		type = handleExp(root->firstChild->nextSibling);
+		CSNode *expNode = root->firstChild->nextSibling;
+		type = handleExp(expNode);
 		if(type == NULL) {
-			printf("type has error after -\n");
+			//printf("type has error after -\n");
 			return NULL;
 		}
 		if(type->kind != BASIC) {
-			printf("type is not a basic type, cannot follow -\n");
+			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The operand should be an integer or float.\n",expNode->lineNo);
 			return NULL;
 		}
 		return type;
 	}
 	else if(isProduction_2(root,MyEXP,MyNOT,MyEXP) == 1) {
 		SpecialType *type = NULL;
-		type = handleExp(root->firstChild->nextSibling);
+		CSNode *expNode = root->firstChild->nextSibling;
+		type = handleExp(expNode);
 		if(type == NULL) {
-			printf("type has a error after !\n");
+			//printf("type has a error after !\n");
 			return NULL;
 		}
 		if(!(type->kind == BASIC && (type->u).basic == 0)) {
-			printf("type is not a int type, cannot follow !\n");
+			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The operand should be an integer.\n",expNode->lineNo);
 			return NULL;
 		}
 		return type;
@@ -250,12 +252,12 @@ SpecialType *handleExp(CSNode *root) {
 		CSNode *argsNode = root->firstChild->nextSibling->nextSibling;
 		int countOfArgs = getCountOfArgs(argsNode);
 		if(fc->param_num != countOfArgs) {
-			printf("func param count is not equal\n");
+			printf("Error type 9 at Line %d: The number of arguments and the number of parameters are not equal for function \"%s\".\n",root->firstChild->lineNo,name);
 			return NULL;
 		}
 		FieldList *fd_param = handleArgs(argsNode);
 		if(compareFieldList(fc->param,fd_param) == 0) {
-			printf("func param cannot match\n");
+			printf("Error type 9 at Line %d: The type of arguments and the type of parameters are not equal for function \"%s\".\n",root->firstChild->lineNo,name);
 			return NULL;
 		}
 		return fc->rel;
@@ -274,7 +276,7 @@ SpecialType *handleExp(CSNode *root) {
 		}
 		SYMBOL_FUNC *fc = (SYMBOL_FUNC *)(checkFlag->content);
 		if(!(fc->param == NULL && fc->param_num == 0)) {
-			printf("func param is not match\n");
+			printf("Error type 9 at Line %d: The number of arguments and the number of parameters are not equal for function \"%s\".\n",root->firstChild->lineNo,name);
 			return NULL;
 		}
 		return fc->rel;
@@ -285,7 +287,7 @@ SpecialType *handleExp(CSNode *root) {
 		SpecialType *type1 = handleExp(exp1);
 		SpecialType *type2 = handleExp(exp2);
 		if(type1 == NULL || type2 == NULL) {
-			printf("type has a error , []\n");
+			//printf("type has a error , []\n");
 			return NULL;
 		}
 		if(type1->kind != ARRAY) {
@@ -299,11 +301,12 @@ SpecialType *handleExp(CSNode *root) {
 		return (type1->u).array.elem;
 	}
 	else if(isProduction_3(root,MyEXP,MyEXP,MyDOT,MyID) == 1) {
-		SpecialType *type = handleExp(root->firstChild);
+		SpecialType *type = NULL;
+		type = handleExp(root->firstChild);
 		CSNode *idNode = root->firstChild->nextSibling->nextSibling;
 		char *name = (idNode->type_union).type_id.p_str;
 		if(type == NULL) {
-			printf("type has a error, .id\n");
+			//printf("type has a error, .id\n");
 			return NULL;
 		}
 		if(type->kind != STRUCTURE) {

@@ -66,6 +66,7 @@ void handleFunDec(CSNode *root, SpecialType *rel) {
 		if(checkFlag != NULL) {
 			//func name is same, error
 			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",id_tmp->lineNo,name);
+			FieldList *fd_tmp = handleVarList(root->firstChild->nextSibling->nextSibling);
 			return;
 		} else {
 			FieldList *fd_tmp = handleVarList(root->firstChild->nextSibling->nextSibling);
