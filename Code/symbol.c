@@ -7,14 +7,43 @@
 
 static int initFlag = 0;
 static SYNode *hashtable[TABLE_SIZE];
-//static SYNode *repeatlist = NULL;	// maybe some name is repeat, but cannot ignore them directly, example MySTRUCTNAME and MyFUNC, maybe there is sth should use later in the STRUCT or FUNC
+static char myReadFunc[8] = "read";
+static char myWriteFunc[8] = "write";
+
+static void addReadAndWriteFunction();
 
 static void initSymbolTable() {
+	initFlag = 1;
 	int i;
 	for(i = 0; i < TABLE_SIZE; i++) {
 		hashtable[i] = NULL;
 	}
-	initFlag = 1;
+	addReadAndWriteFunction();
+}
+
+//init symbol table, add read() and write() function
+static void addReadAndWriteFunction() {
+	SYMBOL_FUNC *newContent1 = (SYMBOL_FUNC *)malloc(sizeof(SYMBOL_FUNC));
+	SYMBOL_FUNC *newContent2 = (SYMBOL_FUNC *)malloc(sizeof(SYMBOL_FUNC));
+	SpecialType *rel1 = (SpecialType *)malloc(sizeof(SpecialType));
+	SpecialType *rel2 = (SpecialType *)malloc(sizeof(SpecialType));
+	SpecialType *param2 = (SpecialType *)malloc(sizeof(SpecialType));
+	rel1->kind = BASIC;
+	(rel1->u).basic = 0;
+	rel2->kind = BASIC;
+	(rel2->u).basic = 0;
+	param2->kind = BASIC;
+	(param2->u).basic = 0;
+	FieldList *fd2 = getAndSetFieldList(NULL,param2,NULL);
+	newContent1->rel = rel1;
+	newContent1->param = NULL;
+	newContent1->param_num = 0;
+	newContent2->rel = rel2;
+	newContent2->param = fd2;
+	newContent2->param_num = 1;
+	
+	addSymbol(MyFUNCNAME,0,myReadFunc,0,newContent1);
+	addSymbol(MyFUNCNAME,0,myWriteFunc,0,newContent2);
 }
 
 static unsigned int hash_djb(char *name) {
