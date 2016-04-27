@@ -81,7 +81,7 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
-			printf("Error at Line %d: Only integer can be the condition for \"if(condition)\".\n",expNode->lineNo);
+			printf("Error type 7 at Line %d: Only integer can be the condition for \"if(condition)\".\n",expNode->lineNo);
 		}
 		handleStmt(stmtNode,rel);
 	}
@@ -98,7 +98,7 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
-			printf("Error at Line %d: Only interger can be the condition for \"if(condition)\".\n",expNode->lineNo);
+			printf("Error type 7 at Line %d: Only interger can be the condition for \"if(condition)\".\n",expNode->lineNo);
 		}
 		handleStmt(stmt1Node,rel);
 		handleStmt(stmt2Node,rel);
@@ -114,7 +114,7 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
-			printf("Error at Line %d: Only integer can be the condition for \"while(condition)\".\n",expNode->lineNo);
+			printf("Error type 7 at Line %d: Only integer can be the condition for \"while(condition)\".\n",expNode->lineNo);
 		}
 		handleStmt(stmtNode,rel);
 	}
