@@ -26,7 +26,10 @@ int main(int argc, char** argv) {
 	if(printTreeFlag == 1) {
 		//preOrderPrint(treeRoot);
 		preOrderAndAnalysis(treeRoot);
-		testSymbol();
+		//testSymbol();
+		if(semanticFlag == 1) {
+			printf("an semantic error exists.\n");
+		}
 	}
 	return 0;
 }

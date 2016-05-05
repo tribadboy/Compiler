@@ -132,6 +132,7 @@ typedef struct CSNode {
 CSNode *treeRoot;		// the root of the syntax tree
 
 int printTreeFlag;
+int semanticFlag;
 
 typedef struct StackNode {
 	CSNode *p_node;

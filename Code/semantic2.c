@@ -68,6 +68,7 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 		expType = handleExp(root->firstChild->nextSibling);
 		if(compareSpecialType(rel,expType) == 0) {
 			printf("Error type 8 at Line %d: Type mismatched for return.\n",root->firstChild->nextSibling->lineNo);
+			semanticFlag = 0;
 		}
 	}
 	else if(isProduction_5(root,MySTMT,MyIF,MyLP,MyEXP,MyRP,MySTMT) == 1) {
@@ -77,11 +78,13 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 		expType = handleExp(expNode);
 		if(expType == NULL) {
 			//printf("type error follow if(\n");
+			semanticFlag = 0;
 			handleStmt(stmtNode,rel);
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
 			printf("Error type 7 at Line %d: Only integer can be the condition for \"if(condition)\".\n",expNode->lineNo);
+			semanticFlag = 0;
 		}
 		handleStmt(stmtNode,rel);
 	}
@@ -95,10 +98,12 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 			//printf("type error follow if(\n");
 			handleStmt(stmt1Node,rel);
 			handleStmt(stmt2Node,rel);
+			semanticFlag = 0;
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
 			printf("Error type 7 at Line %d: Only interger can be the condition for \"if(condition)\".\n",expNode->lineNo);
+			semanticFlag = 0;
 		}
 		handleStmt(stmt1Node,rel);
 		handleStmt(stmt2Node,rel);
@@ -111,15 +116,18 @@ void handleStmt(CSNode *root, SpecialType *rel) {
 		if(expType == NULL) {
 			//printf("type error follow while(\n");
 			handleStmt(stmtNode,rel);
+			semanticFlag = 0;
 			return;
 		}
 		if(!(expType->kind == BASIC && (expType->u).basic == 0)) {
 			printf("Error type 7 at Line %d: Only integer can be the condition for \"while(condition)\".\n",expNode->lineNo);
+			semanticFlag = 0;
 		}
 		handleStmt(stmtNode,rel);
 	}
 	else {
 		printf("error Stmt production\n");
+		semanticFlag = 0;
 	}
 }
 
@@ -136,14 +144,17 @@ SpecialType *handleExp(CSNode *root) {
 		if(!(isProduction_1(lexp,MyEXP,MyID) == 1 || 
 		     isProduction_4(lexp,MyEXP,MyEXP,MyLB,MyEXP,MyRB) == 1 || isProduction_3(lexp,MyEXP,MyEXP,MyDOT,MyID) == 1)) {
 			printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n",lexp->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(ltype == NULL || rtype == NULL) {
 			//printf("left or right has a error, =\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(compareSpecialType(ltype,rtype) == 0) {
 			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",lexp->nextSibling->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return ltype;
@@ -158,18 +169,22 @@ SpecialType *handleExp(CSNode *root) {
 		rtype = handleExp(rexp);
 		if(ltype == NULL || rtype == NULL) {
 			//printf("left or right type has error, || &&\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(compareSpecialType(ltype,rtype) == 0) {
 			printf("Error type 7 at Line %d: Type mismatched for operands.\n",lexp->nextSibling->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(!(ltype->kind == BASIC && (ltype->u).basic == 0)) {
 			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The left operand should be an integer.\n",lexp->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(!(rtype->kind == BASIC && (rtype->u).basic == 0)) {
 			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The right operand should be an integer.\n",rexp->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return ltype;
@@ -188,19 +203,31 @@ SpecialType *handleExp(CSNode *root) {
 		rtype = handleExp(rexp);
 		if(ltype == NULL || rtype == NULL) {
 			//printf("left or right type has error,+-\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(compareSpecialType(ltype,rtype) == 0) {
 			printf("Error type 7 at Line %d: Type mismatched for operands.\n",lexp->nextSibling->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(ltype->kind != BASIC) {
 			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The left operand should be an interger or float.\n",lexp->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(rtype->kind != BASIC) {
 			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The right operand should be an integer or float.\n",rexp->lineNo);
+			semanticFlag = 0;
 			return NULL;
+		}
+		if((ltype->u).basic == 1 && isProduction_3(root,MyEXP,MyEXP,MyRELOP,MyEXP) == 1) {
+			SpecialType *type = NULL;
+			type = (SpecialType *)malloc(sizeof(SpecialType));
+			type->kind = BASIC;
+			(type->u).basic = 0;
+			type->size = getSizeOfSpecialType(type);
+			return type;
 		}
 		return ltype;
 	}
@@ -215,10 +242,12 @@ SpecialType *handleExp(CSNode *root) {
 		type = handleExp(expNode);
 		if(type == NULL) {
 			//printf("type has error after -\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(type->kind != BASIC) {
 			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The operand should be an integer or float.\n",expNode->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return type;
@@ -229,10 +258,12 @@ SpecialType *handleExp(CSNode *root) {
 		type = handleExp(expNode);
 		if(type == NULL) {
 			//printf("type has a error after !\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(!(type->kind == BASIC && (type->u).basic == 0)) {
 			printf("Error type 7 at Line %d: Type mismatched for operand and operator. The operand should be an integer.\n",expNode->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return type;
@@ -243,10 +274,12 @@ SpecialType *handleExp(CSNode *root) {
 		checkFlag = checkSymbolName(0,name);
 		if(checkFlag == NULL) {
 			printf("Error type 2 at Line %d: Undefined function \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(checkFlag->type != MyFUNCNAME) {
 			printf("Error type 11 at Line %d: \"%s\" is not a function.\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		SYMBOL_FUNC *fc = (SYMBOL_FUNC *)(checkFlag->content);
@@ -254,11 +287,13 @@ SpecialType *handleExp(CSNode *root) {
 		int countOfArgs = getCountOfArgs(argsNode);
 		if(fc->param_num != countOfArgs) {
 			printf("Error type 9 at Line %d: The number of arguments and the number of parameters are not equal for function \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		FieldList *fd_param = handleArgs(argsNode);
 		if(compareFieldList(fc->param,fd_param) == 0) {
 			printf("Error type 9 at Line %d: The type of arguments and the type of parameters are not equal for function \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return fc->rel;
@@ -269,15 +304,18 @@ SpecialType *handleExp(CSNode *root) {
 		checkFlag = checkSymbolName(0,name);
 		if(checkFlag == NULL) {
 			printf("Error type 2 at Line %d: Undefined function \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(checkFlag->type != MyFUNCNAME) {
 			printf("Error type 11 at Line %d: \"%s\" is not a function.\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		SYMBOL_FUNC *fc = (SYMBOL_FUNC *)(checkFlag->content);
 		if(!(fc->param == NULL && fc->param_num == 0)) {
 			printf("Error type 9 at Line %d: The number of arguments and the number of parameters are not equal for function \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return fc->rel;
@@ -289,14 +327,17 @@ SpecialType *handleExp(CSNode *root) {
 		SpecialType *type2 = handleExp(exp2);
 		if(type1 == NULL || type2 == NULL) {
 			//printf("type has a error , []\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(type1->kind != ARRAY) {
-			printf("Error type 10 at Line %d: Variable is not an array.\n",exp1->lineNo);
+			printf("Error type 10 at Line %d: Variable is not an array or the element of the array is not an array.\n",exp1->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(!(type2->kind == BASIC && (type2->u).basic == 0)) {
 			printf("Error type 12 at Line %d: The value between \"[\" and \"]\" is not an interger.\n",exp2->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return (type1->u).array.elem;
@@ -308,10 +349,12 @@ SpecialType *handleExp(CSNode *root) {
 		char *name = (idNode->type_union).type_id.p_str;
 		if(type == NULL) {
 			//printf("type has a error, .id\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(type->kind != STRUCTURE) {
 			printf("Error type 13 at Line %d: Illegal use of \".\".\n",root->firstChild->nextSibling->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 		FieldList *fd = (type->u).structure;
@@ -319,6 +362,7 @@ SpecialType *handleExp(CSNode *root) {
 		checkFlag = checkSameNameFL(name,fd);
 		if(checkFlag == NULL) {
 			printf("Error type 14 at Line %d: Non-existent field \"%s\".\n",idNode->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		return checkFlag->type;
@@ -329,10 +373,12 @@ SpecialType *handleExp(CSNode *root) {
 		checkFlag = checkSymbolName(0,name);
 		if(checkFlag == NULL) {
 			printf("Error type 1 at Line %d: Undefined variable \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(checkFlag->type == MySTRUCTNAME || checkFlag->type == MyFUNCNAME) {
 			printf("Error type 1 at Line %d: Undefined variable \"%s\",it is a name of a struct or a function, not a variable.\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		if(checkFlag->type == MyINTVAR) {
@@ -349,6 +395,7 @@ SpecialType *handleExp(CSNode *root) {
 		}
 		else {
 			printf("error type id\n");
+			semanticFlag = 0;
 			return NULL;
 		}
 	}
@@ -370,6 +417,7 @@ SpecialType *handleExp(CSNode *root) {
 	}
 	else {
 		printf("error Exp production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -390,6 +438,7 @@ FieldList *handleArgs(CSNode *root) {
 	}
 	else {
 		printf("error Args production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -419,6 +468,7 @@ int getSizeOfSpecialType(SpecialType *t) {
 		}
 		else {
 			printf("error,array size <= 0 cannot compute size\n");
+			semanticFlag = 0;
 			return 0;
 		}
 	}
@@ -433,6 +483,7 @@ int getSizeOfSpecialType(SpecialType *t) {
 	}
 	else {
 		printf("error,type cannot compute size\n");
+		semanticFlag = 0;
 		return 0;
 	}
 }

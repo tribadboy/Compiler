@@ -12,8 +12,10 @@ struct Temp2
 
 int main()
 {
+  int a[10];
   struct Temp1 t1;
   struct Temp2 t2;
-  struct Temp1 a[12];
+  struct Temp1 b[12];
   t1 = t2;
+  a[9][7] = 0;
 }

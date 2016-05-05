@@ -52,6 +52,7 @@ void handleExtDef(CSNode *root) {
 	}
 	else {
 		printf("error ExtDef produciton\n");
+		semanticFlag = 0;
 	}
 	return;
 }
@@ -67,12 +68,14 @@ void handleFunDec(CSNode *root, SpecialType *rel) {
 			//func name is same, error
 			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",id_tmp->lineNo,name);
 			FieldList *fd_tmp = handleVarList(root->firstChild->nextSibling->nextSibling);
+			semanticFlag = 0;
 			return;
 		} else {
 			FieldList *fd_tmp = handleVarList(root->firstChild->nextSibling->nextSibling);
 			//return NULL is error
 			if(fd_tmp == NULL) {
 				//the param of func is wrong, not store it
+				semanticFlag = 0;
 				return;
 			}
 			SYMBOL_FUNC *newContent = (SYMBOL_FUNC *)malloc(sizeof(SYMBOL_FUNC));
@@ -90,6 +93,7 @@ void handleFunDec(CSNode *root, SpecialType *rel) {
 		SYNode *checkFlag = checkSymbolName(emptyFlag,name);
 		if(checkFlag != NULL) {
 			printf("Error type 4 at Line %d: Redefined function \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return;
 		} else {
 			FieldList *fd_tmp = NULL;
@@ -104,6 +108,7 @@ void handleFunDec(CSNode *root, SpecialType *rel) {
 	}
 	else {
 		printf("error FunDec production\n");
+		semanticFlag = 0;
 	}
 	return;
 }
@@ -130,6 +135,7 @@ void handleCompSt(CSNode *root, SpecialType *rel) {
 	}
 	else {
 		printf("error CompSt production\n");
+		semanticFlag = 0;
 	}
 }
 
@@ -144,6 +150,7 @@ void handleStmtList(CSNode *root, SpecialType *rel) {
 	}
 	else {
 		printf("error StmtList production\n");
+		semanticFlag = 0;
 	}
 }
 
@@ -168,6 +175,7 @@ FieldList *handleVarList(CSNode *root) {
 	}
 	else {
 		printf("error VarList production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 	return NULL;
@@ -184,6 +192,7 @@ FieldList *handleParamDec(CSNode *root) {
 	}
 	else {
 		printf("error ParamDec production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -203,6 +212,7 @@ FieldList *handleDefList(CSNode *root, int structFlag, FieldList *list) {
 	}
 	else {
 		printf("error DefList production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 	return NULL;
@@ -224,6 +234,7 @@ FieldList *handleDef(CSNode *root, int structFlag, FieldList *list) {
 	}
 	else {
 		printf("error Def production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -243,6 +254,7 @@ FieldList *handleDecList(CSNode *root, SpecialType *basicType, int structFlag, F
 	}
 	else {
 		printf("error DecList production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -267,6 +279,7 @@ FieldList *handleExtDecList(CSNode *root, SpecialType *basicType) {
 	}
 	else {
 		printf("error ExtDecList production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -281,17 +294,36 @@ FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, Field
 	else if(isProduction_3(root,MyDEC,MyVARDEC,MyASSIGNOP,MyEXP) == 1) {
 		FieldList *fd_tmp;
 		fd_tmp = handleVarDec(root->firstChild,basicType,structFlag,list);
+		CSNode *expNode = root->firstChild->nextSibling->nextSibling;
+		SpecialType *expType = NULL;
 		if(structFlag == 1) {
 			printf("Error type 15 at Line %d: Initialization in the struct definition.\n",root->firstChild->nextSibling->lineNo);
+			expType = handleExp(expNode);
+			semanticFlag = 0;
 			return fd_tmp;
 		}
-		//do sth
 		//handle assignop exp
-
+		expType = handleExp(expNode);
+		SpecialType *lfd_type = NULL;
+		FieldList *tmp = fd_tmp;
+		if(tmp == NULL) {
+			//printf("vardec has error,cannot assignop\n");
+			semanticFlag = 0;
+			return fd_tmp;
+		}
+		while(tmp != NULL) {
+			lfd_type = tmp->type;
+			if(compareSpecialType(lfd_type,expType) == 0) {
+				printf("Error type 5 at Line %d: Type mismatched for assignment.\n",root->firstChild->nextSibling->lineNo);
+				semanticFlag = 0;
+			}
+			tmp = tmp->tail;
+		}
 		return fd_tmp;
 	}
 	else {
 		printf("error Dec production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -306,9 +338,11 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 		if(checkFlag != NULL) {
 			if(structFlag == 1 && checkSameNameFL(name,list) != NULL) {
 				printf("Error type 15 at Line %d: Redefined field \"%s\".\n",root->firstChild->lineNo,name);
+				semanticFlag = 0;
 				return NULL;
 			}
 			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n",root->firstChild->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		SymbolType tp_tmp;
@@ -345,6 +379,7 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 			return linkList(list,fd);
 		}
 		else {
+			semanticFlag = 0;
 			printf("error basicType,id:%s has no meaning\n",name);
 			return NULL;
 		}
@@ -355,6 +390,7 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 		int size = (int_tmp->type_union).type_int.value;
 		if(size <= 0) {
 			printf("Error at Line %d: Array size %d should bigger than 0.\n",int_tmp->lineNo,size);
+			semanticFlag = 0;
 			return NULL;
 		}
 		SpecialType *basicType_tmp = NULL;
@@ -369,6 +405,7 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 	}
 	else {
 		printf("error VarDec production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 }
@@ -395,6 +432,7 @@ SpecialType *handleSpecifier(CSNode *root) {
 		}
 		else {
 			printf("error basic type, neither int nor float at line %d.\n",root->firstChild->lineNo);
+			semanticFlag = 0;
 			return NULL;
 		}
 	}
@@ -404,6 +442,7 @@ SpecialType *handleSpecifier(CSNode *root) {
 	}
 	else {
 		printf("error Specifier production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 	return NULL;
@@ -425,6 +464,7 @@ SpecialType *handleStructSpecifier(CSNode *root) {
 		if(checkFlag != NULL) {
 			//print error ,name is same
 			printf("Error type 16 at Line %d: Duplicated name \"%s\".\n",opttag_tmp->firstChild->lineNo,name);
+			semanticFlag = 0;
 			addSymbolFlag = 0;
 		}
 		else {
@@ -480,11 +520,13 @@ SpecialType *handleStructSpecifier(CSNode *root) {
 		if(checkFlag == NULL) {
 			//not find symbol in the table
 			printf("Error type 17 at Line %d: Undefined structure \"%s\".\n",id_tmp->lineNo,name);
+			semanticFlag = 0;
 			return NULL;
 		}
 		else {
 			if(checkFlag->type != MySTRUCTNAME) {
 				printf("Error type 17 at Line %d: Undefined structure and the name \"%s\" is duplicated.\n",id_tmp->lineNo,name); 
+				semanticFlag = 0;
 				return NULL;
 			}
 			else {
@@ -494,6 +536,7 @@ SpecialType *handleStructSpecifier(CSNode *root) {
 	}
 	else {
 		printf("error StructSpecifier production\n");
+		semanticFlag = 0;
 		return NULL;
 	}
 	return NULL;

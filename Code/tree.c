@@ -9,6 +9,7 @@
 static StackNode pstack[P_STACK_SIZE];
 static int p_top = -1;
 int printTreeFlag = 1;
+int semanticFlag = 1;
 
 void push(CSNode *p, int h) {
 	if(p_top + 1 == P_STACK_SIZE) {
