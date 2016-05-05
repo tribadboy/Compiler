@@ -12,6 +12,7 @@ struct Temp2
 
 int main()
 {
+  float p[8],w,q[9] = 0.9;
   int a[10];
   struct Temp1 t1;
   struct Temp2 t2;

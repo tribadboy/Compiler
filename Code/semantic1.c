@@ -304,7 +304,6 @@ FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, Field
 		}
 		//handle assignop exp
 		expType = handleExp(expNode);
-		SpecialType *lfd_type = NULL;
 		FieldList *tmp = fd_tmp;
 		if(tmp == NULL) {
 			//printf("vardec has error,cannot assignop\n");
@@ -312,12 +311,14 @@ FieldList *handleDec(CSNode *root, SpecialType *basicType, int structFlag, Field
 			return fd_tmp;
 		}
 		while(tmp != NULL) {
-			lfd_type = tmp->type;
-			if(compareSpecialType(lfd_type,expType) == 0) {
-				printf("Error type 5 at Line %d: Type mismatched for assignment.\n",root->firstChild->nextSibling->lineNo);
-				semanticFlag = 0;
+			if(tmp->tail == NULL) {
+				break;
 			}
 			tmp = tmp->tail;
+		}
+		if(compareSpecialType(tmp->type,expType) == 0) {
+			printf("Error type 5 at Line %d: Type mismatched for assignment.\n",root->firstChild->nextSibling->lineNo);
+			semanticFlag = 0;
 		}
 		return fd_tmp;
 	}

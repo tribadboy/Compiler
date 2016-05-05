@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "type.h"
 #include "semantic.h"
+#include "ir.h"
 
 extern int yyparse(void);
 extern void yyrestart(FILE *input_file);
@@ -28,7 +29,7 @@ int main(int argc, char** argv) {
 		preOrderAndAnalysis(treeRoot);
 		//testSymbol();
 		if(semanticFlag == 1) {
-			printf("an semantic error exists.\n");
+			preOrderAndTranslate(treeRoot);
 		}
 	}
 	return 0;
