@@ -109,6 +109,7 @@ typedef struct SpecialType {
 		struct { struct SpecialType *elem; int size; } array;
 		FieldList *structure;
 	} u;
+	int size;
 } SpecialType;
 
 //symbol type

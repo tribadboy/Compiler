@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 	if(printTreeFlag == 1) {
 		//preOrderPrint(treeRoot);
 		preOrderAndAnalysis(treeRoot);
-		//testSymbol();
+		testSymbol();
 	}
 	return 0;
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "type.h"
+#include "semantic.h"
 
 #define TABLE_SIZE 200
 
@@ -30,10 +31,13 @@ static void addReadAndWriteFunction() {
 	SpecialType *param2 = (SpecialType *)malloc(sizeof(SpecialType));
 	rel1->kind = BASIC;
 	(rel1->u).basic = 0;
+	rel1->size = getSizeOfSpecialType(rel1);
 	rel2->kind = BASIC;
 	(rel2->u).basic = 0;
+	rel2->size = getSizeOfSpecialType(rel2);
 	param2->kind = BASIC;
 	(param2->u).basic = 0;
+	param2->size = getSizeOfSpecialType(param2);
 	FieldList *fd2 = getAndSetFieldList(NULL,param2,NULL);
 	newContent1->rel = rel1;
 	newContent1->param = NULL;
@@ -131,6 +135,8 @@ void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *con) {
 //look the contents in the hashtable for checking
 void testSymbol() {
 	int i;
+	SpecialType *type = NULL;
+	void *content = NULL;
 	printf("-------------test hashtable-----------------\n");
 	for(i = 0; i < TABLE_SIZE; i++) {
 		if(hashtable[i] != NULL) {
@@ -138,9 +144,36 @@ void testSymbol() {
 			printf("index: %d\n", i);
 			while(temp != NULL) {
 				if(i == 0) {
-					printf("type: %d\t name: empty\t line: %d\n",(int)temp->type,temp->lineno);
+					printf("type: %d\t name: empty\t line: %d\t",(int)temp->type,temp->lineno);
 				} else {
-					printf("type: %d\t name: %s\t line: %d\n",(int)temp->type, temp->name, temp->lineno);
+					printf("type: %d\t name: %s\t line: %d\t",(int)temp->type, temp->name, temp->lineno);
+				}
+				if(temp->type == MyINTVAR) {
+					content = temp->content;
+					type = ((SYMBOL_INT *)content)->type;
+					printf("size: %d\n",type->size);
+				} else if(temp->type == MyFLOATVAR) {
+					content = temp->content;
+					type = ((SYMBOL_FLOAT *)content)->type;
+					printf("size: %d\n",type->size);
+				} else if(temp->type == MyARRAYVAR) {
+					content = temp->content;
+					type = ((SYMBOL_ARRAY *)content)->type;
+					printf("size: %d\n",type->size);
+				} else if(temp->type == MySTRUCTNAME) {
+					content = temp->content;
+					type = ((SYMBOL_STRUCTNAME *)content)->type;
+					printf("size: %d\n",type->size); 
+				} else if(temp->type == MySTRUCTVAR) {
+					content = temp->content;
+					type = ((SYMBOL_STRUCTVAR *)content)->type;
+					printf("size: %d\n",type->size);
+				} else if(temp->type == MyFUNCNAME) {
+					content = temp->content;
+					type = ((SYMBOL_FUNC *)content)->rel;
+					printf("size(rel): %d\n",type->size);
+				} else {
+					printf("error type\n");
 				}
 				temp = temp->nextHash;
 			}

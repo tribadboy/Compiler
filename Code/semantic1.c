@@ -362,6 +362,7 @@ FieldList *handleVarDec(CSNode *root, SpecialType *basicType, int structFlag, Fi
 		basicType_tmp->kind = ARRAY;
 		(basicType_tmp->u).array.elem = basicType;
 		(basicType_tmp->u).array.size = size;
+		basicType_tmp->size = getSizeOfSpecialType(basicType_tmp);
 		FieldList *fd_tmp = NULL;
 		fd_tmp = handleVarDec(root->firstChild,basicType_tmp,structFlag,list);
 		return fd_tmp;
@@ -382,12 +383,14 @@ SpecialType *handleSpecifier(CSNode *root) {
 			basicType = (SpecialType *)malloc(sizeof(SpecialType));
 			basicType->kind = BASIC;
 			(basicType->u).basic = 0;
+			basicType->size = getSizeOfSpecialType(basicType);
 			return basicType;
 		}
 		else if(strcmp(token_tmp,"float") == 0) {
 			basicType = (SpecialType *)malloc(sizeof(SpecialType));
 			basicType->kind = BASIC;
 			(basicType->u).basic = 1;
+			basicType->size = getSizeOfSpecialType(basicType);
 			return basicType;
 		}
 		else {
@@ -435,6 +438,7 @@ SpecialType *handleStructSpecifier(CSNode *root) {
 		basicType = (SpecialType *)malloc(sizeof(SpecialType));
 		basicType->kind = STRUCTURE;
 		(basicType->u).structure = fd_tmp;
+		basicType->size = getSizeOfSpecialType(basicType);
 		if(addSymbolFlag == 1) {
 			SYMBOL_STRUCTNAME *newContent = (SYMBOL_STRUCTNAME *)malloc(sizeof(SYMBOL_STRUCTNAME));
 			// add a structname symbol, its type is the basicType that build soon
@@ -457,6 +461,7 @@ SpecialType *handleStructSpecifier(CSNode *root) {
 		basicType = (SpecialType *)malloc(sizeof(SpecialType));
 		basicType->kind = STRUCTURE;
 		(basicType->u).structure = fd_tmp;
+		basicType->size = getSizeOfSpecialType(basicType);
 
 		//add a structname symbol whose name is empty
 		SYMBOL_STRUCTNAME *newContent = (SYMBOL_STRUCTNAME *)malloc(sizeof(SYMBOL_STRUCTNAME));

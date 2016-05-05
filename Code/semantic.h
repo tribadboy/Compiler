@@ -24,4 +24,5 @@ void handleStmt(CSNode *root, SpecialType *rel);
 SpecialType *handleExp(CSNode *root);
 FieldList *handleArgs(CSNode *root);
 int getCountOfArgs(CSNode *root);
+int getSizeOfSpecialType(SpecialType *t);
 

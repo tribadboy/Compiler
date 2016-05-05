@@ -14,5 +14,6 @@ int main()
 {
   struct Temp1 t1;
   struct Temp2 t2;
+  struct Temp1 a[12];
   t1 = t2;
 }

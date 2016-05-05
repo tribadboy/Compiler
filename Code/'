@@ -176,8 +176,7 @@ SpecialType *handleExp(CSNode *root) {
 	}
 	else if(isProduction_3(root,MyEXP,MyEXP,MyRELOP,MyEXP) == 1
 	    ||  isProduction_3(root,MyEXP,MyEXP,MyPLUS,MyEXP) == 1
-	    ||  isProduction_3(root,MyEXP,MyEXP,MyMINUS,MyEXP) == 1	  
-	    ||  isProduction_3(root,MyEXP,MyEXP,MySTAR,MyEXP) == 1
+	    ||  isProduction_3(root,MyEXP,MyEXP,MyMINUS,MyEXP) == 1	       ||  isProduction_3(root,MyEXP,MyEXP,MySTAR,MyEXP) == 1
 	    ||  isProduction_3(root,MyEXP,MyEXP,MyDIV,MyEXP) == 1
 	    ) {
 	    	CSNode *lexp = root->firstChild;
@@ -357,15 +356,14 @@ SpecialType *handleExp(CSNode *root) {
 		type = (SpecialType *)malloc(sizeof(SpecialType));
 		type->kind = BASIC;
 		(type->u).basic = 0;
-		type->size = getSizeOfSpecialType(type);
 		return type;
+		return NULL;
 	}
 	else if(isProduction_1(root,MyEXP,MyFLOAT) == 1) {
 		SpecialType *type = NULL;
 		type = (SpecialType *)malloc(sizeof(SpecialType));
 		type->kind = BASIC;
 		(type->u).basic = 1;
-		type->size = getSizeOfSpecialType(type);
 		return type;
 	}
 	else {
@@ -410,10 +408,10 @@ int getCountOfArgs(CSNode *root) {
 
 //compute the size of SpecialType
 int getSizeOfSpecialType(SpecialType *t) {
-	if(t->kind == BASIC) {
+	if(t->type == BASIC) {
 		return 4;
 	}
-	else if(t->kind == ARRAY) {
+	else if(t->type == ARRAY) {
 		if((t->u).array.size > 0) {
 			return getSizeOfSpecialType((t->u).array.elem) * (t->u).array.size;
 		}
@@ -422,14 +420,7 @@ int getSizeOfSpecialType(SpecialType *t) {
 			return 0;
 		}
 	}
-	else if(t->kind == STRUCTURE) {
-		int size = 0;
-		FieldList *fd = (t->u).structure;
-		while(fd != NULL) {
-			size += getSizeOfSpecialType(fd->type);
-			fd = fd->tail;
-		}
-		return size;
+	else if(t->type == STRUCTURE) {
 	}
 	else {
 		printf("error,type cannot compute size\n");
