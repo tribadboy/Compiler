@@ -10,6 +10,7 @@ static int initFlag = 0;
 static SYNode *hashtable[TABLE_SIZE];
 static char myReadFunc[8] = "read";
 static char myWriteFunc[8] = "write";
+static int var_no = 1;
 
 static void addReadAndWriteFunction();
 
@@ -129,6 +130,7 @@ void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *con) {
 	pnode->content = con;
 	//insert at the head of every unit in the hashtable
 	pnode->nextHash = hashtable[index];
+	pnode->var_no = var_no++;
 	hashtable[index] = pnode;
 }
 
@@ -144,9 +146,9 @@ void testSymbol() {
 			printf("index: %d\n", i);
 			while(temp != NULL) {
 				if(i == 0) {
-					printf("type: %d\t name: empty\t line: %d\t",(int)temp->type,temp->lineno);
+					printf("type: %d\t name: empty\t line: %d\tvar_no: %d\t",(int)temp->type,temp->lineno,temp->var_no);
 				} else {
-					printf("type: %d\t name: %s\t line: %d\t",(int)temp->type, temp->name, temp->lineno);
+					printf("type: %d\t name: %s\t line: %d\tvar_no: %d\t",(int)temp->type,temp->name,temp->lineno,temp->var_no);
 				}
 				if(temp->type == MyINTVAR) {
 					content = temp->content;

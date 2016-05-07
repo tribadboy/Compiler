@@ -150,6 +150,7 @@ typedef struct SYNode {
 	char *name;		// not apply a new area, use CSNode area
 	int lineno;
 	void *content;		// point to the symbol type struct content
+	int var_no;
 	struct SYNode *nextHash;
 } SYNode;
 

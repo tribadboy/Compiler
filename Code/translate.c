@@ -28,6 +28,34 @@ void preOrderAndTranslate(CSNode *root) {
 	}
 }
 
+//translate "ExtDef -> ...|... "
 void translateExtDef(CSNode *root) {
 	printf("translate ExtDef here\n");
+	if(isProduction_3(root,MyEXTDEF,MySPECIFIER,MyFUNDEC,MyCOMPST) == 1) {
+		translateFunDec(root->firstChild->nextSibling);
+		translateCompSt(root->firstChild->nextSibling->nextSibling);
+	}
+	else {
+		printf("cannot translate the ExtDef\n");
+	}
+}
+
+//translate "FunDec -> ...|... "
+void translateFunDec(CSNode *root) {
+	if(isProduction_4(root,MyFUNDEC,MyID,MyLP,MyVARLIST,MyRP) == 1) {
+		//do sth
+
+	}
+	else if(isProduction_3(root,MyFUNDEC,MyID,MyLP,MyRP) == 1) {
+		char *name = (root->firstChild->type_union).type_id.p_str;
+		InterCode *interCode = getAndSetInterCode_FUNCTION(name);
+		insertInterCode(interCode);
+	}
+	else {
+		printf("error FunDec production(translate)\n");
+	}
+}
+
+//translate "CompSt -> ...|... "
+void translateCompSt(CSNode *root) {
 }
