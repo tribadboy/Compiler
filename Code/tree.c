@@ -30,6 +30,16 @@ int pop(CSNode **p, int *h) {
 	p_top--;
 	return 1;
 }
+
+int isStackEmpty() {
+	if(p_top == -1) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 /*
 void preOrderPrint(CSNode *root) {
 	if(root == NULL) {
@@ -44,6 +54,11 @@ void preOrderPrint(CSNode *root) {
 */
 void preOrderPrint(CSNode *root) {
 	if(root == NULL) {
+		printf("the root is null,cannot print the tree\n");
+		return;
+	}
+	if(isStackEmpty() != 1) {
+		printf("error, stack is not empty, cannot print the tree\n");
 		return;
 	}
 	int high = 0;

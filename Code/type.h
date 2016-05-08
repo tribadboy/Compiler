@@ -168,6 +168,7 @@ typedef struct SymbolNode {
 /* func in tree.c  */
 void push(CSNode *p, int h);
 int pop(CSNode **P, int *h);
+int isStackEmpty();
 CSNode *setCSNode(TokenType t, int no);
 CSNode *setCSNode_int(TokenType t, int no, int v);
 CSNode *setCSNode_float(TokenType t, int no, float v);

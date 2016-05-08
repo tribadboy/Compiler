@@ -24,6 +24,7 @@ static void initCodeTable() {
 void insertInterCode(InterCode *interCode) {
 	if(sum >= MAX_CODE_LINE) {
 		printf("error, the line of code is over the limit\n");
+		translateFlag = 0;
 		return;
 	}
 	codes[sum] = interCode;
@@ -54,6 +55,7 @@ static void writeOperand(Operand *o) {
 	}
 	else {
 		printf("error,cannot write operand(error kind)\n");
+		translateFlag = 0;
 	}
 }
 
@@ -165,6 +167,7 @@ void writeInterCode() {
 		}
 		else {
 			printf("error, cannot write intercode(kind error)\n");
+			translateFlag = 0;
 		}
 	}
 }

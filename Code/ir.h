@@ -46,7 +46,7 @@ typedef struct InterCodeNode {
 } InterCodeNode;
 
 char allCodes[8000];
-
+int translateFlag;
 
 /* ------------------------func-----------------------------*/
 
@@ -87,4 +87,6 @@ InterCode *getAndSetInterCode_WRITE(Operand *operand);
 void preOrderAndTranslate(CSNode *root);
 void translateExtDef(CSNode *root);
 void translateFunDec(CSNode *root);
+void translateVarList(CSNode *root);
+void translateParamDec(CSNode *root);
 void translateCompSt(CSNode *root);

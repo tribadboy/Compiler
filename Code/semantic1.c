@@ -6,6 +6,13 @@
 
 void preOrderAndAnalysis(CSNode *root) {
 	if(root == NULL) {
+		printf("the root is null, cannot semantic check\n");
+		semanticFlag = 0;
+		return;
+	}
+	if(isStackEmpty() != 1) {
+		printf("error, stack is not empty, cannot semantic check\n");
+		semanticFlag = 0;
 		return;
 	}
 	int high = 0;
