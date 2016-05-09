@@ -199,6 +199,7 @@ void printTypeExp(CSNode *pnode);
 SYNode *checkSymbolName(int emptyFlag, char *name);
 void addSymbol(SymbolType t, int emptyFlag, char *name, int no, void *con);
 void testSymbol();
+int testSymbolMulArray();
 
 
 /* func in production.c */

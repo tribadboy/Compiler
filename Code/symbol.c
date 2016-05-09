@@ -134,6 +134,31 @@ void addSymbol(SymbolType t, int emptyFlag, char* name, int no, void *con) {
 	hashtable[index] = pnode;
 }
 
+// test symbol table has multi-dimentional array
+// return 1 means have multi-dimentional array
+int testSymbolMulArray() {
+	int i;
+	SpecialType *type = NULL;
+	void *content = NULL;
+	for(i = 0;i < TABLE_SIZE; i++) {
+		if(hashtable[i] != NULL) {
+			SYNode *temp = hashtable[i];
+			while(temp != NULL) {
+				if(temp->type == MyARRAYVAR) {
+					content = temp->content;
+					type = ((SYMBOL_ARRAY *)content)->type;
+					if(type->kind == ARRAY && (type->u).array.elem->kind == ARRAY) {
+						printf("Cannot translate: Code contains variables of multi-dimentional array type.\n");
+						return 1;
+					}
+				}
+				temp =temp->nextHash;
+			}
+		}
+	}
+	return 0;
+}
+
 //look the contents in the hashtable for checking
 void testSymbol() {
 	int i;

@@ -96,3 +96,4 @@ void translateDef(CSNode *root);
 void translateDecList(CSNode *root);
 void translateDec(CSNode *root);
 void translateVarDec(CSNode *root);
+void translateStmt(CSNode *root);

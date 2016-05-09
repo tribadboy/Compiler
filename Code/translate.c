@@ -3,6 +3,7 @@
 #include <string.h>
 #include "type.h"
 #include "ir.h"
+#include "semantic.h"
 
 int translateFlag = 1;
 
@@ -14,6 +15,10 @@ void preOrderAndTranslate(CSNode *root) {
 	}
 	if(isStackEmpty() != 1) {
 		printf("error, stack is not empty, cannot translate\n");
+		translateFlag = 0;
+		return;
+	}
+	if(testSymbolMulArray() == 1) {
 		translateFlag = 0;
 		return;
 	}
@@ -43,9 +48,19 @@ void translateExtDef(CSNode *root) {
 		translateFunDec(root->firstChild->nextSibling);
 		translateCompSt(root->firstChild->nextSibling->nextSibling);
 	}
-
-	//do sth 
-	//check struct has multi-array
+	else if(isProduction_3(root,MyEXTDEF,MySPECIFIER,MyEXTDECLIST,MySEMI) == 1) {
+		printf("error, global variables exist\n");
+		translateFlag = 0;
+	}
+	else if(isProduction_2(root,MyEXTDEF,MySPECIFIER,MySEMI) == 1) {
+		// check mul-array in the struct
+		// sooner in function testSymbolMulArray()
+		// do nothing
+	}
+	else {
+		printf("error ExtDef production(translate)\n");
+		translateFlag = 0;
+	}
 }
 
 //translate "FunDec -> ...|... "
@@ -243,4 +258,15 @@ void translateVarDec(CSNode *root) {
 
 //translate "StmtList -> ...|... "
 void translateStmtList(CSNode *root) {
+	if(isProduction_2(root,MySTMTLIST,MySTMT,MySTMTLIST) == 1) {
+		translateStmt(root->firstChild);
+		translateStmtList(root->firstChild->nextSibling);
+	}
+	else if(isProduction_1(root,MySTMTLIST,MySTMT) == 1) {
+		translateStmt(root->firstChild);
+	}
+	else {
+		printf("error StmtList production(translate)\n");
+		translateFlag = 0;
+	}
 }
