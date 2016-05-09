@@ -5,7 +5,7 @@
 
 #define p_NUM 30
 #define s_NUM 50
-#define o_NUM 60
+#define o_NUM 200
 #define i_NUM 80
 
 // PoolNode is a node representing the syntax unit

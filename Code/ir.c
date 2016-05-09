@@ -230,7 +230,7 @@ InterCode *getAndSetInterCode_ADD(Operand *result, Operand *op1, Operand *op2) {
 	i->kind = ADD;
 	(i->u).binop.result = result;
 	(i->u).binop.op1 = op1;
-	(i->u).binop.op1 = op2;
+	(i->u).binop.op2 = op2;
 	return i;
 }
 
@@ -240,7 +240,7 @@ InterCode *getAndSetInterCode_SUB(Operand *result, Operand *op1, Operand *op2) {
 	i->kind = SUB;
 	(i->u).binop.result = result;
 	(i->u).binop.op1 = op1;
-	(i->u).binop.op1 = op2;
+	(i->u).binop.op2 = op2;
 	return i;
 }
 
@@ -250,7 +250,7 @@ InterCode *getAndSetInterCode_MUL(Operand *result, Operand *op1, Operand *op2) {
 	i->kind = MUL;
 	(i->u).binop.result = result;
 	(i->u).binop.op1 = op1;
-	(i->u).binop.op1 = op2;
+	(i->u).binop.op2 = op2;
 	return i;
 }
 
@@ -260,7 +260,7 @@ InterCode *getAndSetInterCode_DIV(Operand *result, Operand *op1, Operand *op2) {
 	i->kind = DIV;
 	(i->u).binop.result = result;
 	(i->u).binop.op1 = op1;
-	(i->u).binop.op1 = op2;
+	(i->u).binop.op2 = op2;
 	return i;
 }
 

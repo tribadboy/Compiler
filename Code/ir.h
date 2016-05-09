@@ -12,6 +12,12 @@ typedef struct Operand {
 	} u;
 } Operand;
 
+// struct ArgList
+typedef struct ArgList {
+	Operand *operand;
+	struct ArgList *next;
+} ArgList;
+
 // OperandNode exist in the heap
 typedef struct OperandNode {
 	Operand operand;
@@ -64,7 +70,7 @@ Operand *getAndSetOperand_CONSTANT(int value);
 Operand *getAndSetOperand_TEMP(int temp_no);
 Operand *getAndSetOperand_ADDRESS(Operand *operand_address);
 Operand *getAndSetOperand_POINTER(Operand *operand_pointer);
-InterCode *getAndSetInterCode_ASSIGn(Operand *left, Operand *right);
+InterCode *getAndSetInterCode_ASSIGN(Operand *left, Operand *right);
 InterCode *getAndSetInterCode_ADD(Operand *result, Operand *op1, Operand *op2);
 InterCode *getAndSetInterCode_SUB(Operand *result, Operand *op1, Operand *op2);
 InterCode *getAndSetInterCode_MUL(Operand *result, Operand *op1, Operand *op2);
@@ -83,7 +89,9 @@ InterCode *getAndSetInterCode_READ(Operand *operand);
 InterCode *getAndSetInterCode_WRITE(Operand *operand);
 
 
-// func in translate.c
+// func in translate.c and translate2.c
+int new_label();
+int new_temp();
 void preOrderAndTranslate(CSNode *root);
 void translateExtDef(CSNode *root);
 void translateFunDec(CSNode *root);
@@ -97,3 +105,6 @@ void translateDecList(CSNode *root);
 void translateDec(CSNode *root);
 void translateVarDec(CSNode *root);
 void translateStmt(CSNode *root);
+void translateExp(CSNode *root, Operand *place);
+void translateCondExp(CSNode *root, int true_no, int false_no);
+void translateArgs(CSNode *root, ArgList **head);

@@ -10,6 +10,7 @@ extern int MY_LEXER_PRINT_FLAG;
 
 int main(int argc, char** argv) {
 	if (argc != 3) {
+		printf("Please input output file in the command\n");
 		return 1;
 	}
 	FILE *f1, *f2;
