@@ -143,6 +143,7 @@ void translateCompSt(CSNode *root) {
 	}
 	else if(isProduction_3(root,MyCOMPST,MyLC,MyDEFLIST,MyRC) == 1) {
 		translateDefList(root->firstChild->nextSibling);
+		printf("Warning: the function has no value to return.\n");
 	}
 	else if(isProduction_3(root,MyCOMPST,MyLC,MySTMTLIST,MyRC) == 1) {
 		translateStmtList(root->firstChild->nextSibling);
@@ -200,9 +201,37 @@ void translateDec(CSNode *root) {
 		translateVarDec(root->firstChild);
 	}
 	else if(isProduction_3(root,MyDEC,MyVARDEC,MyASSIGNOP,MyEXP) == 1) {
-		translateVarDec(root->firstChild);
-
-		//do sth about assign =
+		CSNode *vardecNode = root->firstChild;
+		CSNode *expNode = vardecNode->nextSibling->nextSibling;
+		translateVarDec(vardecNode);
+		CSNode *tmp = vardecNode;
+		if(tmp->firstChild->type != MyID) {
+			printf("Cannot translate, the variables of array type cannot assign directly(initial).\n");
+			translateFlag = 0;
+			return;
+		}
+		CSNode *idNode = tmp->firstChild;
+		int emptyFlag = 0;
+		char *name = (idNode->type_union).type_id.p_str;
+		SYNode *checkFlag = NULL;
+		checkFlag = checkSymbolName(emptyFlag,name);
+		if(checkFlag == NULL) {
+			printf("error, not find name in the symbol table\n");
+			translateFlag = 0;
+			return;
+		}
+		int var_no = checkFlag->var_no;
+		if(var_no < 0) {
+			printf("variables of structure cannot assign directly(initial)\n");
+			translateFlag = 0;
+			return;
+		}
+		Operand *var = getAndSetOperand_VARIABLE(var_no);
+		int temp_no = new_temp();
+		Operand *temp = getAndSetOperand_TEMP(temp_no);
+		translateExp(expNode,temp);
+		InterCode *ic = getAndSetInterCode_ASSIGN(var,temp);
+		insertInterCode(ic);
 	}
 	else {
 		printf("error Dec production(translate)\n");
@@ -232,6 +261,7 @@ void translateVarDec(CSNode *root) {
 				return;
 			}
 			int var_no = checkFlag->var_no;
+			checkFlag->var_no = -checkFlag->var_no;
 			int size = con->type->size;
 			Operand *operand = getAndSetOperand_VARIABLE(var_no);
 			InterCode *interCode = getAndSetInterCode_DEC(operand,size);
@@ -240,6 +270,7 @@ void translateVarDec(CSNode *root) {
 		else if(type == MySTRUCTVAR) {
 			SYMBOL_STRUCTVAR *con = (SYMBOL_STRUCTVAR *)(checkFlag->content);
 			int var_no = checkFlag->var_no;
+			checkFlag->var_no = -checkFlag->var_no;
 			int size = con->type->size;
 			Operand *operand = getAndSetOperand_VARIABLE(var_no);
 			InterCode *interCode = getAndSetInterCode_DEC(operand,size);

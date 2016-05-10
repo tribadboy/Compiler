@@ -1,0 +1,19 @@
+struct A { int a; int b; };
+int main() {
+	struct A array[3];
+	int i = 0;
+	array[0].a = 1;
+	array[0].b = -3;
+	array[1].a = -array[0].a;
+	array[1].b = array[0].a + array[0].b;
+	array[2].a = 0;
+	array[2].b = 0;
+	while(i < 2) {
+		array[2].a = array[i].a + array[2].a;
+		array[2].b = -(0-array[i].b) + array[2].b;
+		i = i + 1;
+	}
+	write(array[2].a);
+	write(array[2].b);
+	return 0;
+}

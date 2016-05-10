@@ -97,7 +97,7 @@ void writeInterCode() {
 			writeOperand((temp->u).binop.result);
 			strcat(allCodes," := ");
 			writeOperand((temp->u).binop.op1);
-			strcat(allCodes," \\ ");
+			strcat(allCodes," / ");
 			writeOperand((temp->u).binop.op2);
 			strcat(allCodes,"\n");
 		}
@@ -124,7 +124,7 @@ void writeInterCode() {
 			strcat(allCodes," ");
 			writeOperand((temp->u).if_flag.right);
 			char s[20];
-			sprintf(s," GOTO lable%d\n",(temp->u).if_flag.no);
+			sprintf(s," GOTO label%d\n",(temp->u).if_flag.no);
 			strcat(allCodes,s);
 		}
 		else if(temp->kind == RETURN) {
