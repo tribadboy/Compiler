@@ -53,6 +53,8 @@ typedef struct InterCodeNode {
 
 char allCodes[8000];
 int translateFlag;
+int temp_no;
+int label_no;
 
 /* ------------------------func-----------------------------*/
 
@@ -108,3 +110,19 @@ void translateStmt(CSNode *root);
 void translateExp(CSNode *root, Operand *place);
 void translateCondExp(CSNode *root, int true_no, int false_no);
 void translateArgs(CSNode *root, ArgList **head);
+
+//func in the translate3.c
+void translateExp_1(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_2(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_3(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_4(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_5(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_6(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_7(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_8(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_9(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_10(CSNode *root, Operand *place, int rootTypeFlag);
+void translateExp_11(CSNode *root, Operand *place, int rootTypeFlag);
+
+
+

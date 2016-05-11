@@ -6,23 +6,23 @@ t3 := #0
 IF t2 > t3 GOTO label1
 GOTO label2
 LABEL label1 :
-t5 := #1
-WRITE t5
+t4 := #1
+WRITE t4
 GOTO label3
 LABEL label2 :
-t6 := v4
-t7 := #0
-IF t6 < t7 GOTO label4
+t5 := v4
+t6 := #0
+IF t5 < t6 GOTO label4
 GOTO label5
 LABEL label4 :
-t10 := #1
-t9 := #0 - t10
-WRITE t9
+t8 := #1
+t7 := #0 - t8
+WRITE t7
 GOTO label6
 LABEL label5 :
-t12 := #0
-WRITE t12
+t9 := #0
+WRITE t9
 LABEL label6 :
 LABEL label3 :
-t13 := #0
-RETURN t13
+t10 := #0
+RETURN t10

@@ -35,7 +35,7 @@ LABEL label5 :
 t15 := #1
 v7 := t15
 LABEL label6 :
-t17 := v7
-WRITE t17
-t18 := #0
-RETURN t18
+t16 := v7
+WRITE t16
+t17 := #0
+RETURN t17

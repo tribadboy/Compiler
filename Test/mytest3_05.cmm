@@ -1,6 +1,5 @@
 int add(int m1, int m2, int m3) { 
-	return m1 + m2 + m3;
-	return 0;
+	return m1 + m2 - m3;
 }
 
 int main() {

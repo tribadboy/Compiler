@@ -24,7 +24,7 @@ t15 := &v12
 ARG t15
 t14 := CALL add
 v9 := t14
-t17 := v9
-WRITE t17
-t18 := #0
-RETURN t18
+t16 := v9
+WRITE t16
+t17 := #0
+RETURN t17

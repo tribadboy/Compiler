@@ -46,7 +46,7 @@ t42 := t39 + t41
 t28 := *t42
 t26 := t27 + t28
 v5 := t26
-t44 := v5
-WRITE t44
-t45 := #0
-RETURN t45
+t43 := v5
+WRITE t43
+t44 := #0
+RETURN t44
