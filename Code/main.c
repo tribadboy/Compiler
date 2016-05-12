@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
 		if(semanticFlag == 1) {
 			preOrderAndTranslate(treeRoot);
 			if(translateFlag == 1) {
+				simplyInterCode();
 				writeInterCode();
 				fprintf(f2,"%s",allCodes);
 			}

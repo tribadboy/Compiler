@@ -66,6 +66,7 @@ void deleteInterCodeNode(InterCodeNode *i);
 
 // func in ir.c
 void insertInterCode(InterCode *interCode);
+void simplyInterCode();
 void writeInterCode();
 Operand *getAndSetOperand_VARIABLE(int var_no);
 Operand *getAndSetOperand_CONSTANT(int value);
@@ -123,6 +124,4 @@ void translateExp_8(CSNode *root, Operand *place, int rootTypeFlag);
 void translateExp_9(CSNode *root, Operand *place, int rootTypeFlag);
 void translateExp_10(CSNode *root, Operand *place, int rootTypeFlag);
 void translateExp_11(CSNode *root, Operand *place, int rootTypeFlag);
-
-
 

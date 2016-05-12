@@ -6,20 +6,24 @@
 
 #define MAX_CODE_LINE 400
 
-//static int initCodeFlag = 0;
 static InterCode *codes[MAX_CODE_LINE];
 static int sum = 0;
 char allCodes[8000] = "";
 
-/*
-static void initCodeTable() {
-	initCodeFlag = 1;
-	int i;
-	for(i = 0;i < MAX_CODE_LINE; i++) {
-		codes[i] = NULL;
+void deleteCode(int i) {
+	if(i < 0 || i >= sum) {
+		printf("error, the index of code cannot delete\n");
+		return;
 	}
+	for(int j = i;j < sum - 1; j++) {
+		codes[j] = codes[j+1];
+	}
+	codes[sum-1] = NULL;
+	sum--;
 }
-*/
+
+void simplyInterCode() {
+}
 
 void insertInterCode(InterCode *interCode) {
 	if(sum >= MAX_CODE_LINE) {

@@ -30,7 +30,7 @@ struct Rectangle setRectangle(int l, int s){
 	rectangle_set.short_edge = s;
 	return rectangle_set;
 }
-int comparePerimeterAndReturnShortes(struct Triangle triangle,struct Circle circle, struct Rectangle rectangle){
+int compareReturnShortest(struct Triangle triangle,struct Circle circle, struct Rectangle rectangle){
 	int perimeter1 = triangle.edge1 + triangle.edge2 + triangle.edge3;
 	int perimeter2 = circle.r * 3 * 2;
 	int perimeter3 = 2 * (rectangle.long_edge + rectangle.short_edge);
@@ -51,6 +51,6 @@ int main(){
 	struct Triangle temp1 = setTriangle(3,4,5);
 	struct Circle temp2 = setCircle(2);
 	struct Rectangle temp3= setRectangle(3,4);
-	return comparePerimeterAndReturnShortes(temp1,temp2,temp3);
+	return compareReturnShortest(temp1,temp2,temp3);
 
 }
