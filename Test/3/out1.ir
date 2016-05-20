@@ -8,7 +8,7 @@ GOTO label2
 LABEL label1 :
 t4 := #1
 WRITE t4
-GOTO label3
+GOTO label6
 LABEL label2 :
 t5 := v4
 t6 := #0
@@ -23,6 +23,5 @@ LABEL label5 :
 t9 := #0
 WRITE t9
 LABEL label6 :
-LABEL label3 :
 t10 := #0
 RETURN t10

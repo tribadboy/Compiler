@@ -22,8 +22,86 @@ void deleteCode(int i) {
 	sum--;
 }
 
-void simplyInterCode() {
+/* start to simply the intercode */
+
+//delete goto
+static void deleteGoto() {
+	for(int i = 0;i < sum; i++) {
+		if(codes[i]->kind == GOTO && i+1 < sum) {
+			int no = (codes[i]->u).goto_flag.goto_no;
+			if(codes[i+1]->kind == LABEL && (codes[i+1]->u).label_flag.label_no == no) {
+				deleteCode(i);
+			}
+		}
+	}	
 }
+
+//delete label code duplicated ,eg:
+//label1:
+//label2:
+static void deleteDupLabel(){
+	for(int i = 0;i < sum; i++) {
+		if(codes[i]->kind == LABEL && i+1 < sum && codes[i+1]->kind == LABEL) {	
+			int prevNo = (codes[i]->u).label_flag.label_no;
+			int nextNo = (codes[i+1]->u).label_flag.label_no;
+			for(int j = 0;j < sum; j++) {
+				if(codes[j]->kind == GOTO && (codes[j]->u).goto_flag.goto_no == nextNo) {
+					(codes[j]->u).goto_flag.goto_no = prevNo;
+				}
+				if(codes[j]->kind == IF && (codes[j]->u).if_flag.no == nextNo) {
+					(codes[j]->u).if_flag.no = prevNo;
+				}
+			}
+			deleteCode(i+1);
+			i--;
+		}
+	}
+}
+			
+
+//delete label which is not use
+static void deleteUnuseLabel(){
+	int *parray = (int *)malloc(sizeof(int) * label_no);
+	for(int i = 0;i < label_no; i++) {
+		parray[i] = 0;
+	}
+	for(int j = 0;j < sum; j++) {
+		if(codes[j]->kind == GOTO) {
+			int no = (codes[j]->u).goto_flag.goto_no - 1;
+			parray[no]++;
+		}
+		if(codes[j]->kind == IF) {
+			int no = (codes[j]->u).if_flag.no - 1;
+			parray[no]++;
+		}
+	}
+	for(int j = 0;j < sum; j++) {
+		if(codes[j]->kind == LABEL) {
+			int no =  (codes[j]->u).label_flag.label_no - 1;
+			if(parray[no] == 0) {
+				deleteCode(j);
+				j--;
+			}
+		}
+	}
+	free(parray);
+}
+			
+
+//delete duplicated temp, eg:
+// t1 = a + b;
+// t2 = a + b;
+static void deleteDupTemp() {
+	//do sth
+}
+
+void simplyInterCode() {
+	deleteGoto();
+	deleteUnuseLabel();
+	deleteDupLabel();
+	deleteDupTemp();
+}
+
 
 void insertInterCode(InterCode *interCode) {
 	if(sum >= MAX_CODE_LINE) {
