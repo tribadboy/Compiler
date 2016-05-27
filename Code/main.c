@@ -2,6 +2,7 @@
 #include "type.h"
 #include "semantic.h"
 #include "ir.h"
+#include "objc.h"
 
 extern int yyparse(void);
 extern void yyrestart(FILE *input_file);
@@ -42,6 +43,8 @@ int main(int argc, char** argv) {
 				simplyInterCode();
 				writeInterCode();
 				fprintf(f2,"%s",allCodes);
+
+				getObjectCode();
 			}
 		}
 	}

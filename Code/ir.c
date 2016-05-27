@@ -4,10 +4,9 @@
 #include "type.h"
 #include "ir.h"
 
-#define MAX_CODE_LINE 400
 
-static InterCode *codes[MAX_CODE_LINE];
-static int sum = 0;
+InterCode *codes[MAX_CODE_LINE];
+int sum = 0;
 char allCodes[8000] = "";
 
 void deleteCode(int i) {

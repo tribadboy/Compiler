@@ -2,21 +2,25 @@
 #include <string.h>
 #include "type.h"
 #include "ir.h"
+#include "objc.h"
 
 #define p_NUM 30
 #define s_NUM 50
 #define o_NUM 200
 #define i_NUM 80
+#define b_NUM 60
 
 // PoolNode is a node representing the syntax unit
 // SymbolNode is a node representing the symbol in the symbol table
 // OperandNode is a node representing the Operand in the ir
 // InterCodeNode is a node representing the InterCode in the ir
+// BasicBlockNode is node representing the basicblock in the ir
 
 static PoolNode *p_free = NULL;
 static SymbolNode *s_free = NULL;
 static OperandNode *o_free = NULL;
 static InterCodeNode *i_free = NULL;
+static BasicBlockNode *b_free = NULL;
 
 PoolNode *getNode() {
 	PoolNode *temp;
@@ -78,6 +82,21 @@ InterCodeNode *getInterCodeNode() {
 	return temp;
 }
 
+BasicBlockNode *getBasicBlockNode() {
+	BasicBlockNode *temp;
+	if(b_free == NULL) {
+		b_free = (BasicBlockNode *)malloc(sizeof(BasicBlockNode) * b_NUM);
+		for(temp = b_free; temp != b_free + b_NUM - 1; temp++) {
+			temp->next = temp + 1;
+		}
+		temp->next = NULL;
+	}
+	temp = b_free;
+	b_free = b_free->next;
+	memset(temp,0,sizeof(BasicBlockNode));
+	return temp;
+}
+
 void deleteNode(PoolNode *p) {
 	p->next = p_free;
 	p_free = p;
@@ -96,4 +115,9 @@ void deleteOperandNode(OperandNode *o) {
 void deleteInterCodeNode(InterCodeNode *i) {
 	i->next = i_free;
 	i_free = i;
+}
+
+void deleteBasicBlockNode(BasicBlockNode *b) {
+	b->next = b_free;
+	b_free = b;
 }

@@ -51,10 +51,14 @@ typedef struct InterCodeNode {
 	struct InterCodeNode *next;
 } InterCodeNode;
 
+#define MAX_CODE_LINE 400
+
 char allCodes[8000];
 int translateFlag;
 int temp_no;
 int label_no;
+int sum;
+InterCode *codes[MAX_CODE_LINE];
 
 /* ------------------------func-----------------------------*/
 
