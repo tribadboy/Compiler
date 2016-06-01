@@ -1,12 +1,12 @@
+struct  VarDesp;
 
 // struct basicBlock
 typedef struct BasicBlock {
 	int start;
 	int end;
-	int isFuncHead;	// 0 means false, 1 means true
+	
+	VarDesp *varDesp;
 
-	// do sth
-	// else
 } BasicBlock;
 
 
@@ -18,13 +18,18 @@ typedef struct BasicBlockNode {
 
 
 
-
 /* ------------------------------func------------------------------------*/
 
 //part func about obj code in the pool.c
 BasicBlockNode *getBasicBlockNode();
-void deleteBasicBlockNode();
+RegDespNode *getRegDespNode();
+VarDespNode *getVarDespNode();
+void deleteBasicBlockNode(BasicBlockNode *b);
+void deleteRegDespNode(RegDespNode *r);
+void deleteVarDespNode(VarDespNode *v);
 
 
 //func in objc.c
 void getObjectCode();
+void releaseRegDespNode(RegDesp *r);
+void setBasicBlockVarDesp();

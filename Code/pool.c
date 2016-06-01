@@ -9,6 +9,8 @@
 #define o_NUM 200
 #define i_NUM 80
 #define b_NUM 60
+#define r_NUM 50
+#define v_NUM 50
 
 // PoolNode is a node representing the syntax unit
 // SymbolNode is a node representing the symbol in the symbol table
@@ -21,6 +23,8 @@ static SymbolNode *s_free = NULL;
 static OperandNode *o_free = NULL;
 static InterCodeNode *i_free = NULL;
 static BasicBlockNode *b_free = NULL;
+static RegDespNode *r_free = NULL;
+static VarDespNode *v_free = NULL;
 
 PoolNode *getNode() {
 	PoolNode *temp;
@@ -97,6 +101,36 @@ BasicBlockNode *getBasicBlockNode() {
 	return temp;
 }
 
+RegDespNode *getRegDespNode() {
+	RegDespNode *temp;
+	if(r_free == NULL) {
+		r_free = (RegDespNode *)malloc(sizeof(RegDespNode) * r_NUM);
+		for(temp = r_free; temp != r_free + r_NUM - 1; temp++) {
+			temp->next = temp + 1;
+		}
+		temp->next = NULL;
+	}
+	temp = r_free;
+	r_free = r_free->next;
+	memset(temp,0,sizeof(RegDespNode));
+	return temp;
+}
+
+VarDespNode *getVarDespNode() {
+	VarDespNode *temp;
+	if(v_free == NULL) {
+		v_free = (VarDespNode *)malloc(sizeof(VarDespNode) * v_NUM);
+		for(temp = v_free; temp != v_free + v_NUM - 1; temp++) {
+			temp->next = temp + 1;
+		}
+		temp->next = NULL;
+	}
+	temp = v_free;
+	v_free = v_free->next;
+	memset(temp,0,sizeof(VarDespNode));
+	return temp;
+}
+
 void deleteNode(PoolNode *p) {
 	p->next = p_free;
 	p_free = p;
@@ -120,4 +154,14 @@ void deleteInterCodeNode(InterCodeNode *i) {
 void deleteBasicBlockNode(BasicBlockNode *b) {
 	b->next = b_free;
 	b_free = b;
+}
+
+void deleteRegDespNode(RegDespNode *r) {
+	r->next = r_free;
+	r_free = r;
+}
+
+void deleteVarDespNode(VarDespNode *v) {
+	v->next = v_free;
+	v_free = v;
 }

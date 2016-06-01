@@ -12,11 +12,41 @@ typedef struct Operand {
 	} u;
 } Operand;
 
+
 // struct ArgList
 typedef struct ArgList {
 	Operand *operand;
 	struct ArgList *next;
 } ArgList;
+
+typedef struct RegDesp {
+	Operand *operand;
+	struct RegDesp *next;
+} RegDesp;
+
+typedef struct RegDespNode {
+	RegDesp regDesp;
+	struct RegDespNode *next;
+} RegDespNode;
+
+#define bool _Bool
+#define true 1
+#define false 0
+
+typedef struct VarDesp {
+	Operand *operand;
+	int offset;
+	bool self;
+	bool reg[8];
+	struct VarDesp *next;
+} VarDesp;
+
+typedef struct VarDespNode {
+	VarDesp varDesp;
+	struct VarDespNode *next;
+} VarDespNode;
+
+
 
 // OperandNode exist in the heap
 typedef struct OperandNode {
