@@ -32,4 +32,9 @@ void deleteVarDespNode(VarDespNode *v);
 //func in objc.c
 void getObjectCode();
 void releaseRegDespNode(RegDesp *r);
+void releaseVarDespNode(VarDesp *v);
 void setBasicBlockVarDesp();
+VarDesp *getVarDespFromFunc(int start, int end);
+VarDesp *getAndSetVarDespNode(Operand *operand, int offset);
+Operand *unwrapOperand(Operand *operand);
+VarDesp *checkOpInVarDesp(VarDesp *varDesp, Operand *operand, int size);

@@ -35,6 +35,19 @@ static void clearRegDespArr() {
 	}
 }
 
+static void clearVarDesp(VarDesp *varDesp) {
+	if(varDesp == NULL) {
+		return;
+	}
+	VarDesp *temp = varDesp;
+	while(temp != NULL) {
+		for(int i = 0;i < 8; i++) {
+			temp->reg[i] = false;
+		}
+		temp->next;
+	}
+}
+
 static void insertBlock(BasicBlock *basicBlock) {
 	if(sum_of_blocks >= MAX_NUM_OF_BLOCKS) {
 		printf("error, the num of basicblocks is over the limit\n");
@@ -56,7 +69,17 @@ RegDesp *getAndSetRegDespNode(Operand *operand) {
 	RegDespNode *rnode = getRegDespNode();
 	RegDesp * r = &(rnode->regDesp);
 	r->operand = operand;
+	r->next = NULL;
 	return r;
+}
+
+VarDesp *getAndSetVarDespNode(Operand *operand, int offset) {
+	VarDespNode *vnode = getVarDespNode();
+	VarDesp *v = &(vnode->varDesp);
+	v->operand = operand;
+	v->offset = offset;
+	v->next = NULL;
+	return v;
 }
 
 void releaseRegDespNode(RegDesp *r) {
@@ -64,6 +87,10 @@ void releaseRegDespNode(RegDesp *r) {
 	deleteRegDespNode(rnode);
 }
 
+void releaseVarDespNode(VarDesp *v) {
+	VarDespNode *vnode = (VarDespNode *)v;
+	deleteVarDespNode(vnode);
+}
 
 //check the block whether is a function header(be
 
@@ -106,10 +133,21 @@ void getObjectCode() {
 	for(int i = 0;i < sum_of_blocks; i++) {
 		BasicBlock *temp = blockArr[i];
 		printf("%d	%d->%d\n",i,temp->start,temp->end);
+		VarDesp *tmp = temp->varDesp;
+		while(tmp != NULL) {
+			if(tmp->operand->kind == VARIABLE) {
+				printf("\t\tv%d\toffset %d\n",(tmp->operand->u).var_no,tmp->offset);
+			}
+			else if(tmp->operand->kind == TEMP) {
+				printf("\t\tt%d\toffset %d\n",(tmp->operand->u).temp_no,tmp->offset);
+			}
+			tmp = tmp->next;
+		}
+		printf("\n");
 	}
-	printf("%s",startCode);
-	printf("%s",beforeCall);
-	printf("%s",afterCall);
+	//printf("%s",startCode);
+	//printf("%s",beforeCall);
+	//printf("%s",afterCall);
 
 	// do sth
 }
@@ -117,4 +155,138 @@ void getObjectCode() {
 
 //add varDesp for every basic block (regDesp is global)
 void setBasicBlockVarDesp() {
+	VarDesp *varDesp = NULL;
+	for(int i = 0;i < sum_of_blocks; i++) {
+		BasicBlock *temp = blockArr[i];
+		temp->varDesp = NULL;
+		int start = temp->start;
+		if(codes[start]->kind == FUNCTION) {
+			int end = start + 1;
+			while(end < sum) {
+				if(codes[end]->kind == FUNCTION) {
+					break;
+				}
+				end++;
+			}
+			end--;
+			temp->varDesp = getVarDespFromFunc(start,end);
+			varDesp = temp->varDesp;
+		}
+		else {
+			temp->varDesp = varDesp;
+		}
+	}
 }
+
+//get vardespList  from function  for blocks
+VarDesp *getVarDespFromFunc(int start, int end) {
+	VarDesp *varDesp = NULL;
+	for(int i = start; i <= end; i++) {
+		InterCode *tmp = codes[i];
+		if(tmp->kind == ASSIGN) {
+			Operand *op1 = unwrapOperand((tmp->u).assign.left);
+			Operand *op2 = unwrapOperand((tmp->u).assign.right);
+			varDesp = checkOpInVarDesp(varDesp,op1,4);
+			varDesp = checkOpInVarDesp(varDesp,op2,4);
+		}
+		else if(tmp->kind == ADD || tmp->kind == SUB
+			|| tmp->kind == MUL || tmp->kind == DIV) {
+			Operand *op1 = unwrapOperand((tmp->u).binop.result);
+			Operand *op2 = unwrapOperand((tmp->u).binop.op1);
+			Operand *op3 = unwrapOperand((tmp->u).binop.op2);
+			varDesp = checkOpInVarDesp(varDesp,op1,4);
+			varDesp = checkOpInVarDesp(varDesp,op2,4);
+			varDesp = checkOpInVarDesp(varDesp,op3,4);
+		}
+		else if(tmp->kind == IF) {
+			Operand *op1 = unwrapOperand((tmp->u).if_flag.left);
+			Operand *op2 = unwrapOperand((tmp->u).if_flag.right);
+			varDesp = checkOpInVarDesp(varDesp,op1,4);
+			varDesp = checkOpInVarDesp(varDesp,op2,4);
+		}
+		else if(tmp->kind == RETURN) {
+			Operand *op = unwrapOperand((tmp->u).return_flag.result);
+			varDesp = checkOpInVarDesp(varDesp,op,4);
+		}
+		else if(tmp->kind == DEC) {
+			Operand *op = unwrapOperand((tmp->u).dec_flag.pos);
+			varDesp = checkOpInVarDesp(varDesp,op,(tmp->u).dec_flag.size);
+		}
+		else if(tmp->kind == ARG) {
+			Operand *op = unwrapOperand((tmp->u).arg_flag.arg);
+			varDesp = checkOpInVarDesp(varDesp,op,4);
+		}
+		else if(tmp->kind == CALL) {
+			Operand *op = unwrapOperand((tmp->u).call_flag.result);
+			varDesp = checkOpInVarDesp(varDesp,op,4);
+		}
+		else if(tmp->kind == PARAM) {
+			Operand *op = unwrapOperand((tmp->u).param_flag.param);
+			varDesp = checkOpInVarDesp(varDesp,op,4);
+		}
+		else if(tmp->kind == READ) {
+			Operand *op = unwrapOperand((tmp->u).read_flag.operand);
+			varDesp = checkOpInVarDesp(varDesp,op,4);
+		}
+		else if(tmp->kind == WRITE) {
+			Operand *op = unwrapOperand((tmp->u).write_flag.operand);
+			varDesp = checkOpInVarDesp(varDesp,op,4);
+		}
+		// other conditions have no operands
+	}
+	return varDesp;
+}
+
+Operand *unwrapOperand(Operand *operand) {
+	if(operand == NULL) {
+		return NULL;
+	}
+	Operand *tmp = operand;
+	while(tmp != NULL) {
+		if(tmp->kind == VARIABLE || tmp->kind == CONSTANT 
+			|| tmp->kind == TEMP) {
+			break;
+		}
+		else if(tmp->kind == ADDRESS) {
+			tmp = (tmp->u).operand_address;
+		}
+		else {
+			tmp = (tmp->u).operand_pointer;
+		}
+	}
+	return tmp;
+}
+
+VarDesp *checkOpInVarDesp(VarDesp *varDesp, Operand *operand, int size) {
+	if(operand == NULL) {
+		return varDesp;
+	}
+	else if(operand->kind == CONSTANT) {
+		return varDesp;
+	}
+	else {
+		if(varDesp == NULL) {
+			varDesp = getAndSetVarDespNode(operand,size);
+			return varDesp;
+		}
+		VarDesp *temp = varDesp;
+		VarDesp *prev = NULL;
+		while(temp != NULL) {
+			if(operand->kind == temp->operand->kind &&
+				operand->kind == VARIABLE &&
+				(operand->u).var_no == (temp->operand->u).var_no) {
+				return varDesp;
+			}
+			else if(operand->kind == temp->operand->kind &&
+				operand->kind == TEMP &&
+				(operand->u).temp_no == (temp->operand->u).temp_no) {
+				return varDesp;
+			} 
+			prev = temp;
+			temp = temp->next;
+		}
+		prev->next = getAndSetVarDespNode(operand,prev->offset + size);
+		return varDesp;
+	}
+}
+
