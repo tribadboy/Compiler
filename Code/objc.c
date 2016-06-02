@@ -125,11 +125,96 @@ void getBasicBlocks() {
 }
 
 void getObjectCode() {
-	printf("this is getObjCode()\n");
+
 	getBasicBlocks();
 
 	setBasicBlockVarDesp();
 
+	//printBlockVarDesp();	
+
+	translateObjCode();
+
+}
+
+void translateObjCode() {
+	for(int i = 0; i< sum_of_blocks; i++) {
+		BasicBlock *temp = blockArr[i];
+		translateBlock(temp);
+	}
+}
+
+void translateBlock(BasicBlock *basicBlock) {
+	if(basicBlock == NULL) {
+		printf("error no basicBlock in the array\n");
+		return;
+	}
+
+	//before translate block , clear the regdesp and vardesp
+	clearRegDespArr();
+	clearVarDesp(basicBlock->varDesp);
+
+	//start translate every intercode in block
+	for(int i = basicBlock->start; i <= basicBlock->end; i++) {
+		InterCode *ic = codes[i];
+		if(ic == NULL) {
+			printf("error no intercode in the basicBlock\n");
+			continue;
+		}
+		if(ic->kind == ASSIGN) {
+			translateInterCode_ASSIGN(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == ADD) {
+			translateInterCode_ADD(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == SUB) {
+			translateInterCode_SUB(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == MUL) {
+			translateInterCode_MUL(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == DIV) {
+			translateInterCode_DIV(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == LABEL) {
+			translateInterCode_LABEL(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == FUNCTION) {
+			translateInterCode_FUNCTION(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == GOTO) {
+			translateInterCode_GOTO(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == IF) {
+			translateInterCode_IF(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == RETURN) {
+			translateInterCode_RETURN(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == DEC) {
+			translateInterCode_DEC(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == ARG) {
+			translateInterCode_ARG(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == CALL) {
+			translateInterCode_CALL(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == PARAM) {
+			translateInterCode_PARAM(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == READ) {
+			translateInterCode_READ(ic,basicBlock->varDesp);
+		}
+		else if(ic->kind == WRITE) {
+			translateInterCode_WRITE(ic,basicBlock->varDesp);
+		}
+		else {
+			printf("error InterCode type\n");
+		}
+	}
+}
+
+void printBlockVarDesp() {
 	for(int i = 0;i < sum_of_blocks; i++) {
 		BasicBlock *temp = blockArr[i];
 		printf("%d	%d->%d\n",i,temp->start,temp->end);
@@ -149,9 +234,7 @@ void getObjectCode() {
 	//printf("%s",beforeCall);
 	//printf("%s",afterCall);
 
-	// do sth
 }
-
 
 //add varDesp for every basic block (regDesp is global)
 void setBasicBlockVarDesp() {
@@ -290,3 +373,67 @@ VarDesp *checkOpInVarDesp(VarDesp *varDesp, Operand *operand, int size) {
 	}
 }
 
+
+void translateInterCode_ASSIGN(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_ADD(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_SUB(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_MUL(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_DIV(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_LABEL(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_FUNCTION(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_GOTO(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_IF(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_RETURN(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_DEC(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_ARG(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_CALL(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_PARAM(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_READ(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
+
+void translateInterCode_WRITE(InterCode *ic, VarDesp *varDesp) {
+	//do sth
+}
