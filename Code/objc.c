@@ -154,59 +154,62 @@ void translateBlock(BasicBlock *basicBlock) {
 	clearVarDesp(basicBlock->varDesp);
 
 	//start translate every intercode in block
-	for(int i = basicBlock->start; i <= basicBlock->end; i++) {
+	int start = basicBlock->start;
+	int end = basicBlock->end;
+	VarDesp *varDesp = basicBlock->varDesp;
+	for(int i = start; i <= end; i++) {
 		InterCode *ic = codes[i];
 		if(ic == NULL) {
 			printf("error no intercode in the basicBlock\n");
 			continue;
 		}
 		if(ic->kind == ASSIGN) {
-			translateInterCode_ASSIGN(ic,basicBlock->varDesp);
+			translateInterCode_ASSIGN(ic,varDesp,start,end);
 		}
 		else if(ic->kind == ADD) {
-			translateInterCode_ADD(ic,basicBlock->varDesp);
+			translateInterCode_ADD(ic,varDesp,start,end);
 		}
 		else if(ic->kind == SUB) {
-			translateInterCode_SUB(ic,basicBlock->varDesp);
+			translateInterCode_SUB(ic,varDesp,start,end);
 		}
 		else if(ic->kind == MUL) {
-			translateInterCode_MUL(ic,basicBlock->varDesp);
+			translateInterCode_MUL(ic,varDesp,start,end);
 		}
 		else if(ic->kind == DIV) {
-			translateInterCode_DIV(ic,basicBlock->varDesp);
+			translateInterCode_DIV(ic,varDesp,start,end);
 		}
 		else if(ic->kind == LABEL) {
-			translateInterCode_LABEL(ic,basicBlock->varDesp);
+			translateInterCode_LABEL(ic,varDesp,start,end);
 		}
 		else if(ic->kind == FUNCTION) {
-			translateInterCode_FUNCTION(ic,basicBlock->varDesp);
+			translateInterCode_FUNCTION(ic,varDesp,start,end);
 		}
 		else if(ic->kind == GOTO) {
-			translateInterCode_GOTO(ic,basicBlock->varDesp);
+			translateInterCode_GOTO(ic,varDesp,start,end);
 		}
 		else if(ic->kind == IF) {
-			translateInterCode_IF(ic,basicBlock->varDesp);
+			translateInterCode_IF(ic,varDesp,start,end);
 		}
 		else if(ic->kind == RETURN) {
-			translateInterCode_RETURN(ic,basicBlock->varDesp);
+			translateInterCode_RETURN(ic,varDesp,start,end);
 		}
 		else if(ic->kind == DEC) {
-			translateInterCode_DEC(ic,basicBlock->varDesp);
+			translateInterCode_DEC(ic,varDesp,start,end);
 		}
 		else if(ic->kind == ARG) {
-			translateInterCode_ARG(ic,basicBlock->varDesp);
+			translateInterCode_ARG(ic,varDesp,start,end);
 		}
 		else if(ic->kind == CALL) {
-			translateInterCode_CALL(ic,basicBlock->varDesp);
+			translateInterCode_CALL(ic,varDesp,start,end);
 		}
 		else if(ic->kind == PARAM) {
-			translateInterCode_PARAM(ic,basicBlock->varDesp);
+			translateInterCode_PARAM(ic,varDesp,start,end);
 		}
 		else if(ic->kind == READ) {
-			translateInterCode_READ(ic,basicBlock->varDesp);
+			translateInterCode_READ(ic,varDesp,start,end);
 		}
 		else if(ic->kind == WRITE) {
-			translateInterCode_WRITE(ic,basicBlock->varDesp);
+			translateInterCode_WRITE(ic,varDesp,start,end);
 		}
 		else {
 			printf("error InterCode type\n");
@@ -374,66 +377,66 @@ VarDesp *checkOpInVarDesp(VarDesp *varDesp, Operand *operand, int size) {
 }
 
 
-void translateInterCode_ASSIGN(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_ASSIGN(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_ADD(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_ADD(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_SUB(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_SUB(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_MUL(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_MUL(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_DIV(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_DIV(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_LABEL(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_LABEL(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_FUNCTION(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_FUNCTION(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_GOTO(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_GOTO(InterCode *ic, VarDesp *varDesp ,int start, int end) {
 	//do sth
 }
 
-void translateInterCode_IF(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_IF(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_RETURN(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_RETURN(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_DEC(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_DEC(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_ARG(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_ARG(InterCode *ic, VarDesp *varDesp, int start ,int end) {
 	//do sth
 }
 
-void translateInterCode_CALL(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_CALL(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_PARAM(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_PARAM(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_READ(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_READ(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
 
-void translateInterCode_WRITE(InterCode *ic, VarDesp *varDesp) {
+void translateInterCode_WRITE(InterCode *ic, VarDesp *varDesp, int start, int end) {
 	//do sth
 }
