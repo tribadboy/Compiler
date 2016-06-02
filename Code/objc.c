@@ -16,10 +16,57 @@ const char *afterCall = "  lw $ra, 36($sp)\n  lw $fp, 32($sp)\n  lw $t0, 28($sp)
 static int sum_of_blocks = 0;
 static BasicBlock *blockArr[MAX_NUM_OF_BLOCKS];
 char allObjCodes[8000] = "";
-#define NUM_OF_D_REGS  8
 
 //reg descriptor	$t0 $t1 ... $t7
 RegDesp *regDespArr[NUM_OF_D_REGS];
+
+void getBeforeCall(char buffer[]) {
+	int count = 2;
+	for(int i = 0;i < NUM_OF_D_REGS; i++) {
+		if(regDespArr[i] != NULL) {
+			count++;
+		}
+	}
+	char s[80] = "";
+	int sum_size = count * 4;
+	sprintf(s,"  addi $sp, $sp, -%d\n  sw $ra, %d($sp)\n  sw $fp, %d($sp)\n",sum_size,sum_size-4,sum_size-8);
+	strcat(buffer,s);
+	sum_size -= 12;
+	for(int i = 0; i < NUM_OF_D_REGS; i++) {
+		if(regDespArr[i] != NULL) {
+			char s1[30] = "";
+			sprintf(s1,"  sw $t%d, %d($sp)\n",i,sum_size);
+			strcat(buffer,s1);
+			sum_size -= 4;
+		}
+	}
+}
+
+void getAfterCall(char buffer[]) {
+	int count = 2;
+	for(int i = 0;i < NUM_OF_D_REGS; i++) {
+		if(regDespArr[i] != NULL) {
+			count++;
+		}
+	}
+	char s1[80] = "";
+	int sum_size = count * 4;
+	sprintf(s1,"  lw $ra, %d($sp)\n  lw $fp, %d($sp)\n",sum_size-4,sum_size-8);
+	strcat(buffer,s1);
+	sum_size -= 12;
+	for(int i = 0;i < NUM_OF_D_REGS; i++) {
+		if(regDespArr[i] != NULL) {
+			char s2[30] = "";
+			sprintf(s2,"  lw $t%d, %d($sp)\n",i,sum_size);
+			strcat(buffer,s2);
+			sum_size -= 4;
+		}
+	}
+	char s3[30] = "";
+	sprintf(s3,"  addi $sp, $sp, %d\n",count*4);
+	strcat(buffer,s3);
+}
+
 
 static void clearRegDespArr() {
 	for(int i = 0;i < NUM_OF_D_REGS; i++) {
@@ -44,7 +91,8 @@ static void clearVarDesp(VarDesp *varDesp) {
 		for(int i = 0;i < 8; i++) {
 			temp->reg[i] = false;
 		}
-		temp->next;
+		temp->self = true;
+		temp = temp->next;
 	}
 }
 
@@ -137,6 +185,7 @@ void getObjectCode() {
 }
 
 void translateObjCode() {
+	strcat(allObjCodes,startCode);
 	for(int i = 0; i< sum_of_blocks; i++) {
 		BasicBlock *temp = blockArr[i];
 		translateBlock(temp);
@@ -164,52 +213,52 @@ void translateBlock(BasicBlock *basicBlock) {
 			continue;
 		}
 		if(ic->kind == ASSIGN) {
-			translateInterCode_ASSIGN(ic,varDesp,start,end);
+			translateInterCode_ASSIGN(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == ADD) {
-			translateInterCode_ADD(ic,varDesp,start,end);
+			translateInterCode_ADD(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == SUB) {
-			translateInterCode_SUB(ic,varDesp,start,end);
+			translateInterCode_SUB(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == MUL) {
-			translateInterCode_MUL(ic,varDesp,start,end);
+			translateInterCode_MUL(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == DIV) {
-			translateInterCode_DIV(ic,varDesp,start,end);
+			translateInterCode_DIV(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == LABEL) {
-			translateInterCode_LABEL(ic,varDesp,start,end);
+			translateInterCode_LABEL(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == FUNCTION) {
-			translateInterCode_FUNCTION(ic,varDesp,start,end);
+			translateInterCode_FUNCTION(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == GOTO) {
-			translateInterCode_GOTO(ic,varDesp,start,end);
+			translateInterCode_GOTO(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == IF) {
-			translateInterCode_IF(ic,varDesp,start,end);
+			translateInterCode_IF(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == RETURN) {
-			translateInterCode_RETURN(ic,varDesp,start,end);
+			translateInterCode_RETURN(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == DEC) {
-			translateInterCode_DEC(ic,varDesp,start,end);
+			translateInterCode_DEC(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == ARG) {
-			translateInterCode_ARG(ic,varDesp,start,end);
+			translateInterCode_ARG(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == CALL) {
-			translateInterCode_CALL(ic,varDesp,start,end);
+			translateInterCode_CALL(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == PARAM) {
-			translateInterCode_PARAM(ic,varDesp,start,end);
+			translateInterCode_PARAM(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == READ) {
-			translateInterCode_READ(ic,varDesp,start,end);
+			translateInterCode_READ(ic,varDesp,start,end,i);
 		}
 		else if(ic->kind == WRITE) {
-			translateInterCode_WRITE(ic,varDesp,start,end);
+			translateInterCode_WRITE(ic,varDesp,start,end,i);
 		}
 		else {
 			printf("error InterCode type\n");
@@ -377,66 +426,4 @@ VarDesp *checkOpInVarDesp(VarDesp *varDesp, Operand *operand, int size) {
 }
 
 
-void translateInterCode_ASSIGN(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
 
-void translateInterCode_ADD(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_SUB(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_MUL(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_DIV(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_LABEL(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_FUNCTION(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_GOTO(InterCode *ic, VarDesp *varDesp ,int start, int end) {
-	//do sth
-}
-
-void translateInterCode_IF(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_RETURN(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_DEC(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_ARG(InterCode *ic, VarDesp *varDesp, int start ,int end) {
-	//do sth
-}
-
-void translateInterCode_CALL(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_PARAM(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_READ(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}
-
-void translateInterCode_WRITE(InterCode *ic, VarDesp *varDesp, int start, int end) {
-	//do sth
-}

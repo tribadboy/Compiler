@@ -113,7 +113,7 @@ void insertInterCode(InterCode *interCode) {
 }
 
 static void writeOperand(Operand *o) {
-	char s[16];
+	char s[16] = "";
 	if(o->kind == VARIABLE) {
 		sprintf(s,"v%d",(o->u).var_no);
 		strcat(allCodes,s);
@@ -183,7 +183,7 @@ void writeInterCode() {
 			strcat(allCodes,"\n");
 		}
 		else if(temp->kind == LABEL) {
-			char s[20];
+			char s[20] = "";
 			sprintf(s,"LABEL label%d :\n",(temp->u).label_flag.label_no);
 			strcat(allCodes,s);
 		}
@@ -193,7 +193,7 @@ void writeInterCode() {
 			strcat(allCodes," :\n");
 		}
 		else if(temp->kind == GOTO) {
-			char s[20];
+			char s[20] = "";
 			sprintf(s,"GOTO label%d\n",(temp->u).goto_flag.goto_no);
 			strcat(allCodes,s);
 		}
@@ -204,7 +204,7 @@ void writeInterCode() {
 			strcat(allCodes,(temp->u).if_flag.rel_token);
 			strcat(allCodes," ");
 			writeOperand((temp->u).if_flag.right);
-			char s[20];
+			char s[20] = "";
 			sprintf(s," GOTO label%d\n",(temp->u).if_flag.no);
 			strcat(allCodes,s);
 		}
@@ -216,7 +216,7 @@ void writeInterCode() {
 		else if(temp->kind == DEC) {
 			strcat(allCodes,"DEC ");
 			writeOperand((temp->u).dec_flag.pos);
-			char s[20];
+			char s[20] = "";
 			sprintf(s," %d\n",(temp->u).dec_flag.size);
 			strcat(allCodes,s);
 		}
