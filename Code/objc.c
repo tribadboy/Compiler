@@ -7,20 +7,24 @@
 
 #define MAX_NUM_OF_BLOCKS 150
 
-const char *startCode = ".data\n_prompt: .asciiz \"Enter an integer:\"\n_ret: .asciiz \"\\n\"\n.globl main\n.text\nread:\n  li $v0, 4\n  la $a0, _prompt\n  syscall\n  li $v0, 5\n  syscall\n  jr $ra\n\nwrite:\n  li $v0, 1\n  syscall\n  li $v0, 4\n  la $a0, _ret\n  syscall\n  move $v0, $0\n  jr $ra\n\n";
+const char *startCode = ".data\n_prompt: .asciiz \"Enter an integer:\"\n_ret: .asciiz \"\\n\"\n.globl main\n.text\nread:\n  li $v0, 4\n  la $a0, _prompt\n  syscall\n  li $v0, 5\n  syscall\n  jr $ra\n\nwrite:\n  li $v0, 1\n  syscall\n  li $v0, 4\n  la $a0, _ret\n  syscall\n  move $v0, $0\n  jr $ra\n";
 
 const char *beforeCall = "  addi $sp, $sp, -40\n  sw $ra, 36($sp)\n  sw $fp, 32($sp)\n  sw $t0, 28($sp)\n  sw $t1, 24($sp)\n  sw $t2, 20($sp)\n  sw $t3, 16($sp)\n  sw $t4, 12($sp)\n  sw $t5, 8($sp)\n  sw $t6, 4($sp)\n  sw $t7, 0($sp)\n";
 
 const char *afterCall = "  lw $ra, 36($sp)\n  lw $fp, 32($sp)\n  lw $t0, 28($sp)\n  lw $t1, 24($sp)\n  lw $t2, 20($sp)\n  lw $t3, 16($sp)\n  lw $t4, 12($sp)\n  lw $t5, 8($sp)\n  lw $t6, 4($sp)\n  lw $t7, 0($sp)\n  addi $sp, $sp, 40\n";
 
+const char *callRead = "  addi $sp, $sp, -4\n  sw $ra, 0($sp)\n  jal read\n  lw $ra, 0($sp)\n  addi $sp, $sp, 4\n";
+
+const char *callWrite = "  addi $sp, $sp, -4\n  sw $ra, 0($sp)\n  jal write\n  lw $ra, 0($sp)\n  addi $sp, $sp, 4\n";
+
 static int sum_of_blocks = 0;
 static BasicBlock *blockArr[MAX_NUM_OF_BLOCKS];
-char allObjCodes[8000] = "";
+char allObjCodes[100000] = "";
 
 //reg descriptor	$t0 $t1 ... $t7
 RegDesp *regDespArr[NUM_OF_D_REGS];
 
-void getBeforeCall(char buffer[]) {
+int getBeforeCall() {
 	int count = 2;
 	for(int i = 0;i < NUM_OF_D_REGS; i++) {
 		if(regDespArr[i] != NULL) {
@@ -30,19 +34,20 @@ void getBeforeCall(char buffer[]) {
 	char s[80] = "";
 	int sum_size = count * 4;
 	sprintf(s,"  addi $sp, $sp, -%d\n  sw $ra, %d($sp)\n  sw $fp, %d($sp)\n",sum_size,sum_size-4,sum_size-8);
-	strcat(buffer,s);
+	strcat(allObjCodes,s);
 	sum_size -= 12;
 	for(int i = 0; i < NUM_OF_D_REGS; i++) {
 		if(regDespArr[i] != NULL) {
 			char s1[30] = "";
 			sprintf(s1,"  sw $t%d, %d($sp)\n",i,sum_size);
-			strcat(buffer,s1);
+			strcat(allObjCodes,s1);
 			sum_size -= 4;
 		}
 	}
+	return count;
 }
 
-void getAfterCall(char buffer[]) {
+void getAfterCall() {
 	int count = 2;
 	for(int i = 0;i < NUM_OF_D_REGS; i++) {
 		if(regDespArr[i] != NULL) {
@@ -52,19 +57,19 @@ void getAfterCall(char buffer[]) {
 	char s1[80] = "";
 	int sum_size = count * 4;
 	sprintf(s1,"  lw $ra, %d($sp)\n  lw $fp, %d($sp)\n",sum_size-4,sum_size-8);
-	strcat(buffer,s1);
+	strcat(allObjCodes,s1);
 	sum_size -= 12;
 	for(int i = 0;i < NUM_OF_D_REGS; i++) {
 		if(regDespArr[i] != NULL) {
 			char s2[30] = "";
 			sprintf(s2,"  lw $t%d, %d($sp)\n",i,sum_size);
-			strcat(buffer,s2);
+			strcat(allObjCodes,s2);
 			sum_size -= 4;
 		}
 	}
 	char s3[30] = "";
 	sprintf(s3,"  addi $sp, $sp, %d\n",count*4);
-	strcat(buffer,s3);
+	strcat(allObjCodes,s3);
 }
 
 
@@ -178,7 +183,7 @@ void getObjectCode() {
 
 	setBasicBlockVarDesp();
 
-	//printBlockVarDesp();	
+//	printBlockVarDesp();	
 
 	translateObjCode();
 
@@ -201,6 +206,7 @@ void translateBlock(BasicBlock *basicBlock) {
 	//before translate block , clear the regdesp and vardesp
 	clearRegDespArr();
 	clearVarDesp(basicBlock->varDesp);
+	
 
 	//start translate every intercode in block
 	int start = basicBlock->start;
@@ -263,6 +269,29 @@ void translateBlock(BasicBlock *basicBlock) {
 		else {
 			printf("error InterCode type\n");
 		}
+	}
+
+}
+
+void storeRegValue(VarDesp *varDesp) {
+	VarDesp *tmp = varDesp;
+	while(tmp != NULL) {
+		if(tmp->self == false) {
+			for(int i = 0;i < 8; i++) {
+				if(tmp->reg[i] == true) {
+					int offset = tmp->offset;
+					char code[30] = "";
+					sprintf(code,"  sw $t%d, -%d($fp)\n",i,offset);
+					strcat(allObjCodes,code);
+					tmp->self = true;
+					break;
+				}
+			}
+			if(tmp->self == false) {
+				printf("error,cannot find value in reg to store\n");
+			}
+		}
+		tmp = tmp->next;
 	}
 }
 
@@ -372,6 +401,7 @@ VarDesp *getVarDespFromFunc(int start, int end) {
 	return varDesp;
 }
 
+//just get t1 , v2 , #3
 Operand *unwrapOperand(Operand *operand) {
 	if(operand == NULL) {
 		return NULL;

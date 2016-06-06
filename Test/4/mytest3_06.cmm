@@ -1,0 +1,10 @@
+int main() {
+	int a[3];
+	int c;
+	a[0] = 1;
+	a[1] = 2;
+	a[2] = a[0] + a[1];
+	c = a[0] + a[1] + a[2];
+	write(c);
+	return 0;
+}

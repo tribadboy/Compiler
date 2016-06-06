@@ -83,7 +83,7 @@ typedef struct InterCodeNode {
 
 #define MAX_CODE_LINE 400
 
-char allCodes[8000];
+char allCodes[20000];
 int translateFlag;
 int temp_no;
 int label_no;

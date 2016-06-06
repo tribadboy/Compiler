@@ -1,0 +1,21 @@
+int check(int a, int b, int c, int d, int e, int f, int g, int h) {
+	int result = 0;
+	result = result + a;
+	result = result - b;
+	result = result * c;
+	result = result / d;
+	result = result + e;
+	result = result * f;
+	result = result - g;
+	result = result / h;
+	return result;
+}
+
+int main() {
+	int k1 = check(1,2,3,4,5,6,7,8);
+	int k2 = check(8,7,6,5,4,3,2,1);
+	write(k1);
+	write(k2);
+	return 0;
+}
+	

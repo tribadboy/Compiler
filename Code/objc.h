@@ -1,5 +1,9 @@
 struct  VarDesp;
-char allObjCodes[8000];
+char allObjCodes[100000];
+const char *afterCall;
+const char *beforeCall;
+const char *callRead;
+const char *callWrite;
 
 // struct basicBlock
 typedef struct BasicBlock {
@@ -45,8 +49,20 @@ Operand *unwrapOperand(Operand *operand);
 VarDesp *checkOpInVarDesp(VarDesp *varDesp, Operand *operand, int size);
 void translateObjCode();
 void translateBlock(BasicBlock *basicBlock);
-int getReg(Operand *operand, VarDesp *varDesp, int start, int end, int current);
 bool compareVariAndTemp(Operand *op1, Operand *op2);
+void storeRegValue(VarDesp *varDesp);
+void printBlockVarDesp();
+
+//func in objc2.c
+RegDesp *findRegDespInRegDespList(Operand *operand, RegDesp *regList);
+VarDesp *findVarDespInVarDespList(Operand *operand, VarDesp *varList);
+int getReg(Operand *operand, VarDesp *varDesp, int start, int end, int current);
+void getRegCode(int regIndex, Operand *operand, bool isAddr, VarDesp *varDesp);
+void changeRegCode(int regIndex, Operand *operand, VarDesp *varDesp);
+void putOperandToCertainReg(char *regName, Operand *operand, VarDesp *varDesp, int start, int end, int current);
+void putCertainRegToOperand(char *regName, Operand *operand, VarDesp *varDesp, int start, int end, int current);
+
+
 
 void translateInterCode_ASSIGN(InterCode *ic, VarDesp *varDesp, int start, int end, int current);
 void translateInterCode_ADD(InterCode *ic, VarDesp *varDesp, int start, int end, int current);

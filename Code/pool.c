@@ -9,8 +9,8 @@
 #define o_NUM 200
 #define i_NUM 80
 #define b_NUM 60
-#define r_NUM 50
-#define v_NUM 50
+#define r_NUM 100
+#define v_NUM 120
 
 // PoolNode is a node representing the syntax unit
 // SymbolNode is a node representing the symbol in the symbol table
