@@ -128,16 +128,20 @@ void translateInterCode_IF(InterCode *ic, VarDesp *varDesp, int start, int end, 
 	Operand *right = (ic->u).if_flag.right;
 	char *rel_token = (ic->u).if_flag.rel_token;
 	int no = (ic->u).if_flag.no;
-
+/*
 	if(left->kind != TEMP || right->kind != TEMP) {
 		printf("error, rel token operand is not temp\n");
 		return;
 	}
-
+*/
+/*
 	int leftRegIndex = getReg(left,varDesp,start,end,current);
 	getRegCode(leftRegIndex,left,false,varDesp);
 	int rightRegIndex = getReg(right,varDesp,start,end,current);
 	getRegCode(rightRegIndex,right,false,varDesp);
+*/
+	putOperandToCertainReg("$a1",left,varDesp,start,end,current);
+	putOperandToCertainReg("$a2",right,varDesp,start,end,current);
 	
 	if(current == end) {
 		storeRegValue(varDesp);
@@ -155,7 +159,7 @@ void translateInterCode_IF(InterCode *ic, VarDesp *varDesp, int start, int end, 
 		return;
 	}
 
-	sprintf(code,"  %s $t%d, $t%d, label%d\n",rel_flag,leftRegIndex,rightRegIndex,no);
+	sprintf(code,"  %s $a1, $a2, label%d\n",rel_flag,no);
 	strcat(allObjCodes,code);
 }
 

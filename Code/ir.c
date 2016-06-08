@@ -8,6 +8,7 @@
 InterCode *codes[MAX_CODE_LINE];
 int sum = 0;
 char allCodes[20000] = "";
+//char allCodes[8000] = "";
 
 void deleteCode(int i) {
 	if(i < 0 || i >= sum) {

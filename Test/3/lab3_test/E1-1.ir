@@ -1,0 +1,69 @@
+FUNCTION purchase :
+PARAM v7
+PARAM v8
+PARAM v9
+t4 := v7
+t5 := v8
+t2 := t4 * t5
+t3 := v9
+t1 := t2 * t3
+RETURN t1
+FUNCTION sum :
+PARAM v11
+PARAM v12
+t7 := v11
+t8 := v12
+t6 := t7 + t8
+RETURN t6
+FUNCTION main :
+DEC v15 12
+t10 := &v15
+t11 := t10
+t9 := #2
+*t11 := t9
+t13 := &v15
+t14 := t13 + #4
+t12 := #5
+*t14 := t12
+t16 := &v15
+t17 := t16 + #8
+t15 := #4
+*t17 := t15
+t20 := &v15
+t19 := *t20
+t22 := &v15
+t23 := t22 + #4
+t21 := *t23
+t25 := &v15
+t26 := t25 + #8
+t24 := *t26
+ARG t24
+ARG t21
+ARG t19
+t18 := CALL purchase
+v16 := t18
+t31 := &v15
+t29 := *t31
+t30 := #1
+t28 := t29 + t30
+t35 := &v15
+t36 := t35 + #4
+t33 := *t36
+t34 := #1
+t32 := t33 + t34
+t38 := &v15
+t39 := t38 + #8
+t37 := *t39
+ARG t37
+ARG t32
+ARG t28
+t27 := CALL purchase
+v17 := t27
+t41 := v16
+t42 := v17
+ARG t42
+ARG t41
+t40 := CALL sum
+WRITE t40
+t43 := #0
+RETURN t43

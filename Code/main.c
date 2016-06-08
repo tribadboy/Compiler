@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 		printf("Please input output file in the command\n");
 		return 1;
 	}
-	FILE *f1, *f2, *f3;
+	FILE *f1, *f2;
 	f1 = fopen(argv[1], "r");
 	if (!f1) {
 		perror(argv[1]);
@@ -24,10 +24,6 @@ int main(int argc, char** argv) {
 	if(!f2) {
 		perror(argv[2]);
 		return 3;
-	}
-	f3 = fopen("out.s","w");
-	if(!f3) {
-		return 4;
 	}
 
 	yyrestart(f1);
@@ -46,11 +42,11 @@ int main(int argc, char** argv) {
 			if(translateFlag == 1) {
 				simplyInterCode();
 				writeInterCode();
-				fprintf(f2,"%s",allCodes);
+				//fprintf(f2,"%s",allCodes);
 
 				getObjectCode();
-				printf("%s",allObjCodes);
-				fprintf(f3,"%s",allObjCodes);
+				//printf("%s",allObjCodes);
+				fprintf(f2,"%s",allObjCodes);
 			}
 		}
 	}

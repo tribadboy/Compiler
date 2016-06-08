@@ -1,0 +1,48 @@
+FUNCTION fab :
+PARAM v3
+t1 := v3
+t2 := #0
+IF t1 == t2 GOTO label1
+GOTO label2
+LABEL label1 :
+t3 := #0
+RETURN t3
+GOTO label6
+LABEL label2 :
+t4 := v3
+t5 := #1
+IF t4 == t5 GOTO label4
+GOTO label5
+LABEL label4 :
+t6 := #1
+RETURN t6
+GOTO label6
+LABEL label5 :
+t11 := v3
+t12 := #1
+t10 := t11 - t12
+ARG t10
+t8 := CALL fab
+t14 := v3
+t15 := #2
+t13 := t14 - t15
+ARG t13
+t9 := CALL fab
+t7 := t8 + t9
+RETURN t7
+LABEL label6 :
+FUNCTION main :
+t17 := #0
+ARG t17
+t16 := CALL fab
+WRITE t16
+t19 := #8
+ARG t19
+t18 := CALL fab
+WRITE t18
+t21 := #15
+ARG t21
+t20 := CALL fab
+WRITE t20
+t22 := #0
+RETURN t22

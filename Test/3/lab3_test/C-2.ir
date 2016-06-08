@@ -1,0 +1,90 @@
+FUNCTION main :
+READ t1
+v4 := t1
+t2 := v4
+t3 := #0
+IF t2 < t3 GOTO label1
+GOTO label2
+LABEL label1 :
+t5 := #1
+t4 := #0 - t5
+WRITE t4
+GOTO label18
+LABEL label2 :
+t6 := v4
+t7 := #10
+IF t6 < t7 GOTO label4
+GOTO label5
+LABEL label4 :
+t8 := #1
+WRITE t8
+GOTO label18
+LABEL label5 :
+t11 := v4
+t13 := #10
+t15 := v4
+t16 := #10
+t14 := t15 / t16
+t12 := t13 * t14
+t9 := t11 - t12
+t10 := #0
+IF t9 == t10 GOTO label7
+GOTO label8
+LABEL label7 :
+t18 := #1
+t17 := #0 - t18
+WRITE t17
+GOTO label18
+LABEL label8 :
+t19 := #0
+v5 := t19
+LABEL label10 :
+t20 := v4
+t21 := v5
+IF t20 > t21 GOTO label11
+GOTO label12
+LABEL label11 :
+t27 := v5
+t28 := #10
+t25 := t27 * t28
+t26 := v4
+t23 := t25 + t26
+t29 := #10
+t31 := v4
+t32 := #10
+t30 := t31 / t32
+t24 := t29 * t30
+t22 := t23 - t24
+v5 := t22
+t34 := v4
+t35 := #10
+t33 := t34 / t35
+v4 := t33
+GOTO label10
+LABEL label12 :
+t36 := v4
+t37 := v5
+IF t36 == t37 GOTO label13
+GOTO label14
+LABEL label13 :
+t38 := #1
+WRITE t38
+GOTO label18
+LABEL label14 :
+t39 := v4
+t41 := v5
+t42 := #10
+t40 := t41 / t42
+IF t39 == t40 GOTO label16
+GOTO label17
+LABEL label16 :
+t43 := #1
+WRITE t43
+GOTO label18
+LABEL label17 :
+t45 := #1
+t44 := #0 - t45
+WRITE t44
+LABEL label18 :
+t46 := #0
+RETURN t46

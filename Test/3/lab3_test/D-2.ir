@@ -1,0 +1,277 @@
+FUNCTION power :
+PARAM v3
+PARAM v4
+t4 := #1
+t5 := v4
+t2 := t4 + t5
+t3 := v4
+t1 := t2 - t3
+v6 := t1
+LABEL label1 :
+t6 := v4
+t16 := v6
+t17 := v6
+t14 := t16 - t17
+t15 := #90
+t12 := t14 + t15
+t13 := #89
+t10 := t12 - t13
+t11 := #1
+t8 := t10 + t11
+t9 := #2
+t7 := t8 - t9
+IF t6 > t7 GOTO label2
+GOTO label3
+LABEL label2 :
+t19 := v6
+t20 := v3
+t18 := t19 * t20
+v6 := t18
+t28 := #2
+t29 := #1
+t26 := t28 * t29
+t27 := v4
+t24 := t26 * t27
+t30 := #1
+t31 := v4
+t25 := t30 * t31
+t22 := t24 - t25
+t23 := #1
+t21 := t22 - t23
+v4 := t21
+GOTO label1
+LABEL label3 :
+t32 := v6
+RETURN t32
+FUNCTION mod :
+PARAM v7
+PARAM v8
+t34 := v7
+t38 := v7
+t39 := v8
+t36 := t38 / t39
+t37 := v8
+t35 := t36 * t37
+t33 := t34 - t35
+v10 := t33
+t40 := v10
+v11 := t40
+t41 := v10
+RETURN t41
+FUNCTION getNumDigits :
+PARAM v12
+t42 := #0
+v14 := t42
+t43 := v12
+t44 := #0
+IF t43 < t44 GOTO label4
+GOTO label5
+LABEL label4 :
+t46 := #1
+t45 := #0 - t46
+RETURN t45
+LABEL label5 :
+t47 := v12
+t48 := #0
+IF t47 > t48 GOTO label7
+GOTO label8
+LABEL label7 :
+t50 := v12
+t51 := #10
+t49 := t50 / t51
+v12 := t49
+t53 := v14
+t54 := #2
+t52 := t53 + t54
+v14 := t52
+t56 := v14
+t57 := #2
+t55 := t56 + t57
+v14 := t55
+t59 := v14
+t60 := #3
+t58 := t59 - t60
+v14 := t58
+GOTO label5
+LABEL label8 :
+t61 := v14
+RETURN t61
+FUNCTION isNarcissistic :
+PARAM v15
+t66 := #1
+t67 := v15
+t64 := t66 + t67
+t65 := #1
+t63 := t64 - t65
+ARG t63
+t62 := CALL getNumDigits
+v17 := t62
+t68 := #0
+v18 := t68
+t69 := v15
+v19 := t69
+LABEL label9 :
+t70 := v19
+t71 := #0
+IF t70 > t71 GOTO label10
+GOTO label11
+LABEL label10 :
+t73 := v19
+t74 := #10
+ARG t74
+ARG t73
+t72 := CALL mod
+v20 := t72
+t78 := v19
+t79 := v20
+t76 := t78 - t79
+t77 := #10
+t75 := t76 / t77
+v19 := t75
+t81 := v18
+t83 := v20
+t84 := v17
+ARG t84
+ARG t83
+t82 := CALL power
+t80 := t81 + t82
+v18 := t80
+GOTO label9
+LABEL label11 :
+t85 := v18
+t86 := v15
+IF t85 == t86 GOTO label12
+GOTO label13
+LABEL label12 :
+t87 := #1
+RETURN t87
+GOTO label14
+LABEL label13 :
+t88 := #0
+RETURN t88
+LABEL label14 :
+FUNCTION printHexDigit :
+PARAM v21
+t89 := v21
+t90 := #10
+IF t89 < t90 GOTO label15
+GOTO label16
+LABEL label15 :
+t91 := v21
+WRITE t91
+GOTO label17
+LABEL label16 :
+t93 := v21
+t92 := #0 - t93
+WRITE t92
+LABEL label17 :
+t94 := #0
+RETURN t94
+FUNCTION printHex :
+PARAM v23
+DEC v25 16
+t95 := #0
+v26 := t95
+LABEL label18 :
+t96 := v26
+t97 := #4
+IF t96 < t97 GOTO label19
+GOTO label20
+LABEL label19 :
+t99 := &v25
+t100 := v26
+t101 := t100 * #4
+t102 := t99 + t101
+t103 := v23
+t104 := #16
+ARG t104
+ARG t103
+t98 := CALL mod
+*t102 := t98
+t106 := v23
+t107 := #16
+t105 := t106 / t107
+v23 := t105
+t109 := v26
+t110 := #1
+t108 := t109 + t110
+v26 := t108
+GOTO label18
+LABEL label20 :
+t111 := #3
+v26 := t111
+LABEL label21 :
+t112 := v26
+t113 := #0
+IF t112 >= t113 GOTO label22
+GOTO label23
+LABEL label22 :
+t115 := &v25
+t121 := v26
+t122 := #18
+t119 := t121 + t122
+t120 := #9
+t117 := t119 - t120
+t118 := #9
+t116 := t117 - t118
+t123 := t116 * #4
+t124 := t115 + t123
+t114 := *t124
+ARG t114
+t125 := CALL printHexDigit
+t127 := v26
+t128 := #1
+t126 := t127 - t128
+v26 := t126
+GOTO label21
+LABEL label23 :
+t129 := #0
+RETURN t129
+FUNCTION main :
+t130 := #0
+v28 := t130
+t136 := #2900
+t137 := #7100
+t134 := t136 + t137
+t135 := #1000
+t132 := t134 - t135
+t133 := #440
+t131 := t132 + t133
+v29 := t131
+LABEL label24 :
+t138 := v29
+t146 := #9501
+t147 := #9123
+t144 := t146 + t147
+t145 := #9123
+t142 := t144 - t145
+t143 := #9
+t140 := t142 + t143
+t141 := #10
+t139 := t140 - t141
+IF t138 < t139 GOTO label25
+GOTO label26
+LABEL label25 :
+t150 := v29
+ARG t150
+t148 := CALL isNarcissistic
+t149 := #1
+IF t148 == t149 GOTO label27
+GOTO label28
+LABEL label27 :
+t151 := v29
+ARG t151
+t152 := CALL printHex
+t154 := v28
+t155 := #1
+t153 := t154 + t155
+v28 := t153
+LABEL label28 :
+t157 := v29
+t158 := #1
+t156 := t157 + t158
+v29 := t156
+GOTO label24
+LABEL label26 :
+t159 := v28
+RETURN t159

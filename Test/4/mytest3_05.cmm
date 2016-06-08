@@ -1,4 +1,4 @@
-int add__(int m1, int m2, int m3) { 
+int add(int m1, int m2, int m3) { 
 	return m1 + m2 - m3;
 }
 
@@ -6,6 +6,6 @@ int main() {
 	int a = 0;
 	int b = 1;
 	int c = 2;
-	write(add__(a,b,c));
+	write(add(a,b,c));
 	return 0;
 }
